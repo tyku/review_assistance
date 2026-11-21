@@ -1,6 +1,6 @@
 # Review Assistance
 
-Версия 0.2.1 открывает локальный учебный merge request и показывает diff каждого файла.
+Версия 0.2.2 открывает локальный учебный merge request и показывает diff каждого файла.
 
 ## Запуск
 
@@ -25,9 +25,9 @@ npm run dev
 
 ## Архитектура
 
-NestJS работает внутри основного процесса Electron. Точка входа запускает и закрывает контекст NestJS. [main.ts](src/desktop/main.ts)
+NestJS работает внутри основного процесса Electron. Общая точка входа запускает и закрывает контекст. AppModule подключает модули окна и ревью и регистрирует адаптер между ними. [main.ts](src/main.ts) · [AppModule](src/app.module.ts)
 
-- DesktopModule подключает модуль ревью и регистрирует управление окном и адаптер IPC. Адаптер принимает запросы от основного окна и вызывает прикладной сервис. [DesktopModule](src/desktop/desktop.module.ts) · [Обработчик IPC](src/desktop/infrastructure/review-ipc.handler.ts)
+- DesktopModule управляет окном Electron. AppModule передаёт ему пути к странице и preload. [DesktopModule](src/desktop/desktop.module.ts)
 - ReviewModule связывает прикладной сервис с источником данных через интерфейс. Адаптер источника читает локальный JSON и разбирает unified diff. [ReviewModule](src/review/review.module.ts) · [Прикладной сервис](src/review/application/open-example-review.ts) · [Адаптер источника](src/review/infrastructure/json-example-review.source.ts)
 - Домен описывает MR, файлы и строки diff. Он проверяет уникальность путей и наличие изменений, подсчитывает добавленные и удалённые строки. [Домен ревью](src/review/domain/review.ts)
-- Renderer отображает diff. Кнопка «Открыть пример» вызывает типизированный метод preload, который передаёт запрос по IPC. [Renderer](src/desktop/renderer.ts) · [Preload](src/desktop/preload.ts)
+- Слой представления отображает diff. Кнопка «Открыть пример» отправляет запрос через preload. Адаптер IPC проверяет, что запрос пришёл из основного окна, и вызывает прикладной сервис. [Код представления](src/presentation/review/) · [Обработчик IPC](src/presentation/review/review-ipc.handler.ts)

@@ -1,9 +1,9 @@
 {
   "name": "review-assistance",
-  "version": "0.2.1",
+  "version": "0.2.2",
   "private": true,
   "productName": "Review Assistance",
-  "main": "dist/desktop/main.js",
+  "main": "dist/main.js",
   "scripts": {
     "build": "tsc -p tsconfig.json",
     "dev": "npm run build && node dist/desktop/dev.js"

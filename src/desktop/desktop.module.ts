@@ -1,18 +1,15 @@
 import { Module, type DynamicModule } from '@nestjs/common';
-import { join } from 'node:path';
-import { ReviewModule } from '../review/review.module';
-import { DESKTOP_ROOT, DesktopWindow } from './infrastructure/desktop-window';
-import { ReviewIpcHandler } from './infrastructure/review-ipc.handler';
+import { WINDOW_OPTIONS, DesktopWindow, type WindowOptions } from './infrastructure/desktop-window';
 
 @Module({
-  providers: [DesktopWindow, ReviewIpcHandler],
+  providers: [DesktopWindow],
+  exports: [DesktopWindow],
 })
 export class DesktopModule {
-  static forApp(root: string): DynamicModule {
+  static forWindow(options: WindowOptions): DynamicModule {
     return {
       module: DesktopModule,
-      imports: [ReviewModule.forFixture(join(root, 'fixtures', 'example.json'))],
-      providers: [{ provide: DESKTOP_ROOT, useValue: root }],
+      providers: [{ provide: WINDOW_OPTIONS, useValue: options }],
     };
   }
 }

@@ -1,15 +1,19 @@
 import { Inject, Injectable, Logger, type OnApplicationBootstrap, type OnModuleDestroy } from '@nestjs/common';
 import { app, BrowserWindow, type WebContents } from 'electron';
-import { join } from 'node:path';
 
-export const DESKTOP_ROOT = Symbol('DESKTOP_ROOT');
+export const WINDOW_OPTIONS = Symbol('WINDOW_OPTIONS');
+
+export interface WindowOptions {
+  readonly page: string;
+  readonly preload: string;
+}
 
 @Injectable()
 export class DesktopWindow implements OnApplicationBootstrap, OnModuleDestroy {
   private readonly logger = new Logger(DesktopWindow.name);
   private window?: BrowserWindow;
 
-  constructor(@Inject(DESKTOP_ROOT) private readonly root: string) {}
+  constructor(@Inject(WINDOW_OPTIONS) private readonly options: WindowOptions) {}
 
   async onApplicationBootstrap(): Promise<void> {
     await this.open();
@@ -46,7 +50,7 @@ export class DesktopWindow implements OnApplicationBootstrap, OnModuleDestroy {
       minHeight: 520,
       backgroundColor: '#f4f5f8',
       webPreferences: {
-        preload: join(__dirname, '..', 'preload.js'),
+        preload: this.options.preload,
         contextIsolation: true,
         sandbox: true,
         nodeIntegration: false,
@@ -59,7 +63,7 @@ export class DesktopWindow implements OnApplicationBootstrap, OnModuleDestroy {
     window.webContents.setWindowOpenHandler(() => ({ action: 'deny' }));
 
     try {
-      await window.loadFile(join(this.root, 'ui', 'index.html'));
+      await window.loadFile(this.options.page);
     } catch (error) {
       if (!window.isDestroyed()) window.destroy();
       throw error;
