@@ -1,6 +1,7 @@
 type ScreenReview = import('../../review/domain/review').Review;
 type ScreenFile = import('../../review/domain/review').ChangedFile;
 type FilterIds = typeof import('../../review/domain/file-filter');
+type LanguageSortingStatus = import('../../review/application/linked-review').LanguageSortingStatus;
 
 interface FileEntry {
   file: ScreenFile;
@@ -109,10 +110,16 @@ function fileGroup(label: string, entries: HTMLLIElement[], expanded: boolean): 
   return group;
 }
 
-function showReview(example: ScreenReview, incomplete = false, source = 'Сервис') {
+function showReview(example: ScreenReview, incomplete = false, source = 'Сервис', languageSorting?: LanguageSortingStatus) {
+  const languageMode = languageSorting === 'available';
+  const messages: string[] = [];
+  if (incomplete) messages.push(`${source} вернул неполные изменения. Некоторые файлы или строки могут отсутствовать.`);
+  if (languageSorting === 'empty') messages.push('У репозитория пока нет статистики языков. Используется обычная сортировка.');
+  if (languageSorting === 'forbidden') messages.push('GitLab не дал доступ к списку языков. Используется обычная сортировка.');
+  if (languageSorting === 'unavailable') messages.push('Не удалось загрузить языки репозитория. Используется обычная сортировка.');
   const notice = byId('diff-notice');
-  notice.textContent = incomplete ? `${source} вернул неполные изменения. Некоторые файлы или строки могут отсутствовать.` : '';
-  notice.hidden = !incomplete;
+  notice.textContent = messages.join(' ');
+  notice.hidden = messages.length === 0;
   byId('project').textContent = example.project;
   byId('reference').textContent = example.reference;
   byId('review-title').textContent = example.title;
@@ -126,11 +133,13 @@ function showReview(example: ScreenReview, incomplete = false, source = 'Сер�
   const formatting: FileEntry[] = [];
   const other: FileEntry[] = [];
 
-  const groupingRules = [
-    { id: 'other-extension' satisfies FilterIds['OTHER_EXTENSION_FILTER'], entries: other },
-    { id: 'test-path' satisfies FilterIds['TEST_PATH_FILTER'], entries: tests },
-    { id: 'formatting-and-comments' satisfies FilterIds['FORMATTING_AND_COMMENTS_FILTER'], entries: formatting },
-  ];
+  const extensionRule = { id: 'other-extension' satisfies FilterIds['OTHER_EXTENSION_FILTER'], entries: other };
+  const testRule = { id: 'test-path' satisfies FilterIds['TEST_PATH_FILTER'], entries: languageMode ? other : tests };
+  const formattingRule = { id: 'formatting-and-comments' satisfies FilterIds['FORMATTING_AND_COMMENTS_FILTER'], entries: formatting };
+  const groupingRules = languageMode
+    ? [extensionRule, formattingRule, testRule]
+    : [extensionRule, testRule, formattingRule];
+  const languageFilterId: FilterIds['REPOSITORY_LANGUAGE_FILTER'] = 'repository-language';
 
   for (const file of example.files) {
     const entry = element('li');
@@ -149,19 +158,23 @@ function showReview(example: ScreenReview, incomplete = false, source = 'Сер�
     const target = groupingRules.find(({ id }) =>
       file.filterResults?.some((result) => result.filterId === id && result.outcome === 'match'),
     );
-    const reason = file.filterResults?.find((result) => result.filterId === target?.id)?.reason;
+    const language = file.filterResults?.find((result) => result.filterId === languageFilterId);
+    const fallback = languageMode && language?.outcome !== 'match' ? other : primary;
+    let reason = file.filterResults?.find((result) => result.filterId === target?.id)?.reason;
+    if (languageMode && target === testRule) reason = 'Тест';
+    if (!target && fallback === other) reason = language?.reason ?? 'Язык файла не распознан';
     if (reason) button.append(element('span', 'file-reason', reason));
     button.addEventListener('click', () => showDiff(file, button, source));
     entry.append(button);
-    (target?.entries ?? primary).push({ file, entry, button });
+    (target?.entries ?? fallback).push({ file, entry, button });
   }
 
   fileList.replaceChildren();
   const groups = [
-    { label: 'К просмотру', entries: primary, expanded: true },
+    { label: languageMode ? 'Основное' : 'К просмотру', entries: primary, expanded: true },
     { label: 'Тесты', entries: tests, expanded: true },
     { label: 'Только оформление и комментарии', entries: formatting, expanded: false },
-    { label: 'Прочее', entries: other, expanded: false },
+    { label: languageMode ? 'Остальное' : 'Прочее', entries: other, expanded: false },
   ];
   for (const { label, entries, expanded } of groups) {
     if (entries.length > 0) fileList.append(fileGroup(label, entries.map(({ entry }) => entry), expanded));

@@ -12,7 +12,7 @@ import { ReviewModule } from './review/review.module';
   providers: [ReviewIpcHandler, GitLabIpcHandler, GitHubIpcHandler],
 })
 export class AppModule {
-  static forApp(root: string): DynamicModule {
+  static forApp(root: string, userData: string): DynamicModule {
     const keychain = join(root, '.local', 'bin', 'gitlab-keychain');
     return {
       module: AppModule,
@@ -21,7 +21,7 @@ export class AppModule {
           page: join(root, 'ui', 'index.html'),
           preload: join(__dirname, 'presentation', 'preload.js'),
         }),
-        GitLabModule.forKeychain(keychain),
+        GitLabModule.forKeychain(keychain, join(userData, 'repository-languages')),
         GitHubModule.forKeychain(keychain),
         ReviewModule.forFixture(join(root, 'fixtures', 'example.json')),
       ],

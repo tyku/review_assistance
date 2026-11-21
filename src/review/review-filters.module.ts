@@ -1,6 +1,7 @@
 import { Module } from '@nestjs/common';
 import { EvaluateReviewFilters } from './application/evaluate-review-filters';
 import { OTHER_EXTENSION_FILTER, TEST_PATH_FILTER } from './domain/file-filter';
+import { RepositoryLanguageFilter } from './domain/repository-language.filter';
 import { FilePathFilter } from './domain/file-path.filter';
 import { FormattingAndCommentsFilter } from './infrastructure/formatting-and-comments.filter';
 
@@ -12,6 +13,7 @@ import { FormattingAndCommentsFilter } from './infrastructure/formatting-and-com
         `Расширение ${extension}`),
       new FilePathFilter(TEST_PATH_FILTER, /spec|test/i, (part) => `В пути есть ${part}`),
       new FormattingAndCommentsFilter(),
+      new RepositoryLanguageFilter(),
     ]),
   }],
   exports: [EvaluateReviewFilters],

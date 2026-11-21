@@ -1,3 +1,6 @@
+import { LoadRepositoryLanguages } from '../review/application/load-repository-languages';
+import { DiskRepositoryLanguageCache } from '../review/infrastructure/disk-repository-language.cache';
+import { GitLabRepositoryLanguagesSource } from './infrastructure/gitlab-repository-languages.source';
 import { EvaluateReviewFilters } from '../review/application/evaluate-review-filters';
 import { ReviewFiltersModule } from '../review/review-filters.module';
 import { Module, type DynamicModule } from '@nestjs/common';
@@ -12,12 +15,17 @@ export const GITLAB_CONNECTION = Symbol('GITLAB_CONNECTION');
 
 @Module({})
 export class GitLabModule {
-  static forKeychain(helperPath: string): DynamicModule {
+  static forKeychain(helperPath: string, languageCacheDirectory: string): DynamicModule {
     return {
       module: GitLabModule,
       imports: [ReviewFiltersModule],
       providers: [
         GitLabMergeRequestSource,
+        GitLabRepositoryLanguagesSource,
+        {
+          provide: LoadRepositoryLanguages,
+          useFactory: () => new LoadRepositoryLanguages(new DiskRepositoryLanguageCache(languageCacheDirectory)),
+        },
         {
           provide: GITLAB_CONNECTION,
           useFactory: () => new AccountConnection(
@@ -28,9 +36,14 @@ export class GitLabModule {
         },
         {
           provide: OpenMergeRequest,
-          inject: [GITLAB_CONNECTION, GitLabMergeRequestSource, EvaluateReviewFilters],
-          useFactory: (connection: AccountConnection, source: GitLabMergeRequestSource, filters: EvaluateReviewFilters) =>
-            new OpenMergeRequest(connection, source, filters),
+          inject: [
+            GITLAB_CONNECTION, GitLabMergeRequestSource, EvaluateReviewFilters,
+            LoadRepositoryLanguages, GitLabRepositoryLanguagesSource,
+          ],
+          useFactory: (
+            connection: AccountConnection, source: GitLabMergeRequestSource, filters: EvaluateReviewFilters,
+            loadLanguages: LoadRepositoryLanguages, languageSource: GitLabRepositoryLanguagesSource,
+          ) => new OpenMergeRequest(connection, source, filters, loadLanguages, languageSource),
         },
       ],
       exports: [GITLAB_CONNECTION, OpenMergeRequest],

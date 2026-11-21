@@ -1,5 +1,5 @@
 import 'reflect-metadata';
-import { Logger } from '@nestjs/common';
+import { Logger, type LogLevel } from '@nestjs/common';
 import { NestFactory } from '@nestjs/core';
 import { app } from 'electron';
 import { AppModule } from './app.module';
@@ -10,9 +10,12 @@ async function bootstrap(): Promise<void> {
   logger.log('application starting');
   await app.whenReady();
 
-  const starting = NestFactory.createApplicationContext(AppModule.forApp(app.getAppPath()), {
+  const logLevels: LogLevel[] = ['log', 'warn', 'error'];
+  if (process.env.REVIEW_ASSISTANCE_DEBUG === '1') logLevels.push('debug');
+
+  const starting = NestFactory.createApplicationContext(AppModule.forApp(app.getAppPath(), app.getPath('userData')), {
     abortOnError: false,
-    logger: ['log', 'warn', 'error'],
+    logger: logLevels,
   });
 
   let closing = false;

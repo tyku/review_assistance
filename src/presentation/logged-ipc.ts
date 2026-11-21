@@ -30,7 +30,8 @@ export function registerLoggedIpc(
         const fallback = 'canUseSession' in result && result.canUseSession ? ' fallback=session' : '';
         logger.warn(`${channel} failed reason=${reason}${fallback} ${duration}`);
       } else if ('review' in result) {
-        const summary = `${channel} completed files=${result.review.files.length} incomplete=${result.incomplete} ${duration}`;
+        const sorting = result.languageSorting ? ` languageSorting=${result.languageSorting}` : '';
+        const summary = `${channel} completed files=${result.review.files.length} incomplete=${result.incomplete}${sorting} ${duration}`;
         if (result.incomplete) logger.warn(summary);
         else logger.log(summary);
       } else if ('example' in result) {

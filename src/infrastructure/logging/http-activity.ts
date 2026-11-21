@@ -22,7 +22,7 @@ function failureCode(error: unknown): string {
 
 export async function requestWithActivity(
   provider: 'GitHub' | 'GitLab',
-  operation: 'check-account' | 'load-review' | 'load-diffs',
+  operation: 'check-account' | 'load-review' | 'load-diffs' | 'load-languages',
   request: () => Promise<Response>,
   page?: number,
 ): Promise<Response> {

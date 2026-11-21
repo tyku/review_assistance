@@ -1,6 +1,6 @@
 {
   "name": "review-assistance",
-  "version": "0.6.3",
+  "version": "0.6.4",
   "private": true,
   "productName": "Review Assistance",
   "main": "dist/main.js",
