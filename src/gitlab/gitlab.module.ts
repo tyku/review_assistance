@@ -1,7 +1,10 @@
 import { Module, type DynamicModule } from '@nestjs/common';
-import { GitLabConnection } from './application/gitlab-connection';
+import { AccountConnection } from '../connections/application/account-connection';
+import { KeychainCredentialStore } from '../connections/infrastructure/keychain-credential.store';
+import { normalizeGitLabAddress } from './domain/gitlab-account';
 import { GitLabHttpIdentity } from './infrastructure/gitlab-http.identity';
-import { KeychainCredentialStore } from './infrastructure/keychain-credential.store';
+
+export const GITLAB_CONNECTION = Symbol('GITLAB_CONNECTION');
 
 @Module({})
 export class GitLabModule {
@@ -9,10 +12,14 @@ export class GitLabModule {
     return {
       module: GitLabModule,
       providers: [{
-        provide: GitLabConnection,
-        useFactory: () => new GitLabConnection(new GitLabHttpIdentity(), new KeychainCredentialStore(helperPath)),
+        provide: GITLAB_CONNECTION,
+        useFactory: () => new AccountConnection(
+          new GitLabHttpIdentity(),
+          new KeychainCredentialStore(helperPath, 'gitlab', normalizeGitLabAddress),
+          normalizeGitLabAddress,
+        ),
       }],
-      exports: [GitLabConnection],
+      exports: [GITLAB_CONNECTION],
     };
   }
 }

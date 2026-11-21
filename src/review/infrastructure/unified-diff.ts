@@ -38,6 +38,7 @@ export function parseUnifiedDiff(patch: string): DiffHunk[] {
       continue;
     }
 
+    if (line === '\\ No newline at end of file' && pending?.lines.length) continue;
     const marker = line[0];
     if (!pending || (marker !== ' ' && marker !== '-' && marker !== '+')) {
       throw new Error('Invalid diff line');

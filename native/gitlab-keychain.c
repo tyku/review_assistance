@@ -6,6 +6,9 @@
 #ifndef REVIEW_KEYCHAIN_SERVICE
 #define REVIEW_KEYCHAIN_SERVICE "local.review-assistance.gitlab"
 #endif
+#ifndef REVIEW_GITHUB_KEYCHAIN_SERVICE
+#define REVIEW_GITHUB_KEYCHAIN_SERVICE "local.review-assistance.github"
+#endif
 
 static int exit_status(OSStatus status) {
     if (status == errSecSuccess) return 0;
@@ -14,12 +17,17 @@ static int exit_status(OSStatus status) {
 }
 
 int main(int argc, char **argv) {
-    if (argc != 2) return 1;
+    if (argc < 2 || argc > 3) return 1;
+    CFStringRef service = CFSTR(REVIEW_KEYCHAIN_SERVICE);
+    if (argc == 3 && strcmp(argv[2], "gitlab") != 0) {
+        if (strcmp(argv[2], "github") != 0) return 1;
+        service = CFSTR(REVIEW_GITHUB_KEYCHAIN_SERVICE);
+    }
 
     CFMutableDictionaryRef query = CFDictionaryCreateMutable(
         kCFAllocatorDefault, 0, &kCFTypeDictionaryKeyCallBacks, &kCFTypeDictionaryValueCallBacks);
     CFDictionarySetValue(query, kSecClass, kSecClassGenericPassword);
-    CFDictionarySetValue(query, kSecAttrService, CFSTR(REVIEW_KEYCHAIN_SERVICE));
+    CFDictionarySetValue(query, kSecAttrService, service);
     CFDictionarySetValue(query, kSecAttrAccount, CFSTR("active"));
 
     OSStatus status = errSecParam;

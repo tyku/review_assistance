@@ -12,9 +12,10 @@ export interface DiffHunk {
   readonly lines: readonly DiffLine[];
 }
 
-interface FileDiff {
+export interface FileDiff {
   readonly path: string;
   readonly hunks: readonly DiffHunk[];
+  readonly unavailable?: { added: number; removed: number };
 }
 
 export interface ChangedFile extends FileDiff {
@@ -40,11 +41,13 @@ export function createReview(details: ReviewDetails, diffs: readonly FileDiff[])
   }
 
   const paths = new Set<string>();
-  const files = diffs.map(({ path, hunks }) => {
+  const files = diffs.map(({ path, hunks, unavailable }) => {
     if (!path.trim() || paths.has(path)) {
       throw new Error('Invalid or duplicate file path');
     }
     paths.add(path);
+
+    if (unavailable) return { path, hunks, added: unavailable.added, removed: unavailable.removed, unavailable };
 
     const lines = hunks.flatMap((hunk) => hunk.lines);
     const added = lines.filter((line) => line.marker === '+').length;

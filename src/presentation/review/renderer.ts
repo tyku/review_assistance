@@ -1,5 +1,5 @@
-type ExampleReview = import('../../review/domain/review').Review;
-type ExampleFile = import('../../review/domain/review').ChangedFile;
+type ScreenReview = import('../../review/domain/review').Review;
+type ScreenFile = import('../../review/domain/review').ChangedFile;
 
 interface Window {
   readonly review: import('./review-ipc').ReviewBridge;
@@ -31,7 +31,7 @@ function element<Tag extends keyof HTMLElementTagNameMap>(
   return node;
 }
 
-function stats(file: ExampleFile) {
+function stats(file: ScreenFile) {
   const added = element('span', 'added', '+' + file.added);
   added.setAttribute('aria-label', 'Добавлено строк: ' + file.added);
   const removed = element('span', 'removed', '−' + file.removed);
@@ -39,7 +39,7 @@ function stats(file: ExampleFile) {
   return [added, removed];
 }
 
-function showDiff(file: ExampleFile, button: HTMLButtonElement) {
+function showDiff(file: ScreenFile, button: HTMLButtonElement) {
   if (button === selectedButton) return;
   selectedButton?.setAttribute('aria-pressed', 'false');
   button.setAttribute('aria-pressed', 'true');
@@ -47,6 +47,10 @@ function showDiff(file: ExampleFile, button: HTMLButtonElement) {
 
   byId('diff-title').textContent = file.path;
   byId('diff-stats').replaceChildren(...stats(file));
+  if (file.unavailable) {
+    diffScroll.replaceChildren(element('p', 'diff-unavailable', 'GitHub не вернул полный diff этого файла.'));
+    return;
+  }
 
   const table = element('table', 'diff-table');
   const labels = element('tr');
@@ -82,7 +86,10 @@ function showDiff(file: ExampleFile, button: HTMLButtonElement) {
   diffScroll.scrollTo(0, 0);
 }
 
-function showExample(example: ExampleReview) {
+function showReview(example: ScreenReview, incomplete = false) {
+  const notice = byId('diff-notice');
+  notice.textContent = incomplete ? 'GitHub вернул неполные изменения. Некоторые файлы или строки могут отсутствовать.' : '';
+  notice.hidden = !incomplete;
   byId('project').textContent = example.project;
   byId('reference').textContent = example.reference;
   byId('review-title').textContent = example.title;
@@ -120,17 +127,20 @@ function showExample(example: ExampleReview) {
 
 openButton.addEventListener('click', async () => {
   openButton.disabled = true;
+  prButton.disabled = true;
+  prError.hidden = true;
   errorMessage.hidden = true;
 
   try {
     const result = await window.review.openExample();
     if (!result.ok) throw new Error('Example unavailable');
-    showExample(result.example);
+    showReview(result.example);
   } catch {
     errorMessage.textContent = 'Не удалось открыть учебный MR. Проверьте, что файл fixtures/example.json на месте и не повреждён, затем попробуйте снова.';
     errorMessage.hidden = false;
   } finally {
     openButton.disabled = false;
+    prButton.disabled = false;
     if (!welcome.hidden) openButton.focus();
   }
 });
@@ -140,4 +150,47 @@ backButton.addEventListener('click', () => {
   backButton.hidden = true;
   welcome.hidden = false;
   openButton.focus();
+});
+
+
+const prForm = document.querySelector<HTMLFormElement>('#github-pr-form')!;
+const prLink = document.querySelector<HTMLInputElement>('#github-pr-link')!;
+const prButton = document.querySelector<HTMLButtonElement>('#github-pr-open')!;
+const prError = byId('github-pr-error');
+
+prForm.addEventListener('submit', async (event) => {
+  event.preventDefault();
+  if (openButton.disabled) return;
+  openButton.disabled = true;
+  prButton.disabled = true;
+  prError.hidden = true;
+  errorMessage.hidden = true;
+
+  const messages: Record<import('../../github/application/open-pull-request').PullRequestError, string> = {
+    'invalid-link': 'Введите HTTPS-ссылку на PR с github.com.',
+    'not-connected': 'Сначала подключите аккаунт через кнопку GitHub.',
+    storage: 'Связка ключей недоступна. Разблокируйте её или подключитесь до выхода.',
+    unauthorized: 'GitHub отклонил токен. Обновите подключение в настройках GitHub.',
+    forbidden: 'GitHub запретил доступ или ограничил запросы. Проверьте права токена и попробуйте снова.',
+    'not-found': 'PR не найден или токену недоступен репозиторий.',
+    redirect: 'GitHub перенаправил запрос. Проверьте ссылку на PR.',
+    'invalid-server': 'GitHub не вернул данные PR в ожидаемом формате.',
+    unreachable: 'Не удалось получить PR. Проверьте подключение к GitHub.',
+    empty: 'GitHub не вернул изменённых файлов для этого PR.',
+  };
+
+  try {
+    const result = await window.github.openPullRequest(prLink.value);
+    if (result.ok) showReview(result.review, result.incomplete);
+    else {
+      prError.textContent = messages[result.error] ?? messages['invalid-server'];
+      prError.hidden = false;
+    }
+  } catch {
+    prError.textContent = messages.unreachable;
+    prError.hidden = false;
+  } finally {
+    openButton.disabled = false;
+    prButton.disabled = false;
+  }
 });

@@ -1,9 +1,9 @@
-import type { GitLabIdentity } from '../application/gitlab-connection';
+import type { AccountIdentity } from '../../connections/application/account-connection';
 
-export class GitLabHttpIdentity implements GitLabIdentity {
+export class GitLabHttpIdentity implements AccountIdentity {
   constructor(private readonly request: typeof fetch = (...args) => fetch(...args)) {}
 
-  async verify(address: string, token: string): ReturnType<GitLabIdentity['verify']> {
+  async verify(address: string, token: string): ReturnType<AccountIdentity['verify']> {
     let response: Response;
     try {
       response = await this.request(address + '/api/v4/user', {

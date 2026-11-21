@@ -1,12 +1,16 @@
-import { Injectable, type OnModuleDestroy, type OnModuleInit } from '@nestjs/common';
+import { Inject, Injectable, type OnModuleDestroy, type OnModuleInit } from '@nestjs/common';
 import { ipcMain } from 'electron';
 import { DesktopWindow } from '../../desktop/infrastructure/desktop-window';
-import { GitLabConnection, type ConnectionResult } from '../../gitlab/application/gitlab-connection';
+import type { AccountConnection, ConnectionResult } from '../../connections/application/account-connection';
+import { GITLAB_CONNECTION } from '../../gitlab/gitlab.module';
 import { GITLAB_CHANNELS } from './gitlab-ipc';
 
 @Injectable()
 export class GitLabIpcHandler implements OnModuleInit, OnModuleDestroy {
-  constructor(private readonly window: DesktopWindow, private readonly connection: GitLabConnection) {}
+  constructor(
+    private readonly window: DesktopWindow,
+    @Inject(GITLAB_CONNECTION) private readonly connection: AccountConnection,
+  ) {}
 
   onModuleInit(): void {
     this.handle(GITLAB_CHANNELS.status, () => this.connection.status());

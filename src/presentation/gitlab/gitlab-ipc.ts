@@ -1,4 +1,4 @@
-import type { ConnectionResult } from '../../gitlab/application/gitlab-connection';
+import type { ConnectionResult } from '../../connections/application/account-connection';
 
 export const GITLAB_CHANNELS = {
   status: 'gitlab:status',

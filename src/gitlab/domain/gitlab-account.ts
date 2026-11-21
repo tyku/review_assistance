@@ -1,9 +1,3 @@
-export interface GitLabCredentials {
-  readonly address: string;
-  readonly token: string;
-  readonly username: string;
-}
-
 export function normalizeGitLabAddress(input: string): string | undefined {
   try {
     const text = input.trim();

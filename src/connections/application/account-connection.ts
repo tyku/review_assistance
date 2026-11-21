@@ -1,4 +1,8 @@
-import { normalizeGitLabAddress, type GitLabCredentials } from '../domain/gitlab-account';
+export interface Credentials {
+  readonly address: string;
+  readonly token: string;
+  readonly username: string;
+}
 
 export type ValidationError = 'unauthorized' | 'forbidden' | 'redirect' | 'invalid-server' | 'unreachable';
 export type ConnectionError = ValidationError | 'invalid-address' | 'invalid-token' | 'storage';
@@ -9,24 +13,28 @@ export type ConnectionResult =
   | { ok: true; status: ConnectionStatus }
   | { ok: false; error: ConnectionError; canUseSession?: boolean };
 
-export interface GitLabIdentity {
+export interface AccountIdentity {
   verify(address: string, token: string): Promise<{ username: string } | { error: ValidationError }>;
 }
 
-export interface GitLabCredentialStore {
-  read(): Promise<GitLabCredentials | undefined>;
-  write(credentials: GitLabCredentials): Promise<void>;
+export interface CredentialStore {
+  read(): Promise<Credentials | undefined>;
+  write(credentials: Credentials): Promise<void>;
   remove(): Promise<void>;
 }
 
-export class GitLabConnection {
-  private current?: GitLabCredentials;
-  private pending?: GitLabCredentials;
+export class AccountConnection {
+  private current?: Credentials;
+  private pending?: Credentials;
   private storage: 'keychain' | 'session' = 'keychain';
   private loaded = false;
   private queue: Promise<unknown> = Promise.resolve();
 
-  constructor(private readonly identity: GitLabIdentity, private readonly store: GitLabCredentialStore) {}
+  constructor(
+    private readonly identity: AccountIdentity,
+    private readonly store: CredentialStore,
+    private readonly normalizeAddress: (input: string) => string | undefined,
+  ) {}
 
   status(): Promise<ConnectionResult> {
     return this.serial(async () => {
@@ -38,7 +46,7 @@ export class GitLabConnection {
   connect(address: unknown, rawToken: unknown): Promise<ConnectionResult> {
     return this.serial(async () => {
       this.pending = undefined;
-      const normalized = typeof address === 'string' ? normalizeGitLabAddress(address) : undefined;
+      const normalized = typeof address === 'string' ? this.normalizeAddress(address) : undefined;
       if (!normalized) return { ok: false, error: 'invalid-address' };
       const token = typeof rawToken === 'string' ? rawToken.trim() : '';
       if (!token || token.length > 2048 || /[^\x21-\x7e]/.test(token)) {
@@ -102,6 +110,16 @@ export class GitLabConnection {
     });
   }
 
+  withCredentials<Result>(
+    action: (credentials: Credentials) => Promise<Result>,
+  ): Promise<Result | { error: 'storage' | 'not-connected' }> {
+    return this.enqueue(async () => {
+      if (!await this.load()) return { error: 'storage' } as const;
+      if (!this.current) return { error: 'not-connected' } as const;
+      return action(this.current);
+    });
+  }
+
   private async load(): Promise<boolean> {
     if (this.loaded) return true;
     try {
@@ -123,9 +141,13 @@ export class GitLabConnection {
     };
   }
 
-  private serial(action: () => Promise<ConnectionResult>): Promise<ConnectionResult> {
-    const result = this.queue.then(action).catch((): ConnectionResult => ({ ok: false, error: 'storage' }));
-    this.queue = result;
+  private enqueue<Result>(action: () => Promise<Result>): Promise<Result> {
+    const result = this.queue.then(action);
+    this.queue = result.catch(() => {});
     return result;
+  }
+
+  private serial(action: () => Promise<ConnectionResult>): Promise<ConnectionResult> {
+    return this.enqueue(action).catch(() => ({ ok: false, error: 'storage' }));
   }
 }

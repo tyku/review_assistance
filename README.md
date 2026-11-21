@@ -1,6 +1,6 @@
 # Review Assistance
 
-Версия 0.3.0 открывает локальный учебный merge request и позволяет сохранить подключение к GitLab на macOS.
+Версия 0.4.0 открывает учебный MR, сохраняет подключения к GitLab и GitHub и показывает diff GitHub PR по ссылке.
 
 ## Запуск
 
@@ -45,6 +45,15 @@ Nest CLI запускает небольшой адаптер, который о
 
 Для сборки локального помощника Связки ключей на macOS используются Xcode Command Line Tools. Приложение собирает его при запуске и сохраняет в `.local/bin/`.
 
+## Подключение GitHub
+
+1. Создайте **Fine-grained personal access token**. Выберите тестовый репозиторий и установите **Pull requests → Read-only**. [Права GitHub API](https://docs.github.com/en/rest/pulls/pulls#list-pull-requests-files)
+2. Нажмите **GitHub**, введите токен и нажмите **Подключить**. Приложение покажет имя пользователя.
+3. На стартовом экране вставьте ссылку вида `https://github.com/owner/repo/pull/123` и нажмите **Открыть PR**. Выберите файл, чтобы увидеть diff.
+4. При неполных данных приложение показывает предупреждение. Файлы, для которых GitHub не вернул текстовый diff, видны в списке.
+
+GitHub-токен хранится в отдельной записи Связки ключей `local.review-assistance.github`. Кнопка **Отключить** удаляет эту запись. Режим **Только до выхода** хранит токен в памяти. Запросы с токеном GitHub идут на `https://api.github.com`.
+
 ## Архитектура
 
 NestJS работает внутри основного процесса Electron. Общая точка входа запускает и закрывает контекст. AppModule подключает модули окна и ревью и регистрирует адаптер между ними. [main.ts](src/main.ts) · [AppModule](src/app.module.ts)
@@ -53,4 +62,4 @@ NestJS работает внутри основного процесса Electro
 - ReviewModule связывает прикладной сервис с источником данных через интерфейс. Адаптер источника читает локальный JSON и разбирает unified diff. [ReviewModule](src/review/review.module.ts) · [Прикладной сервис](src/review/application/open-example-review.ts) · [Адаптер источника](src/review/infrastructure/json-example-review.source.ts)
 - Домен описывает MR, файлы и строки diff. Он проверяет уникальность путей и наличие изменений, подсчитывает добавленные и удалённые строки. [Домен ревью](src/review/domain/review.ts)
 - Слой представления отображает diff. Кнопка «Открыть пример» отправляет запрос через preload. Адаптер IPC проверяет, что запрос пришёл из основного окна, и вызывает прикладной сервис. [Код представления](src/presentation/review/) · [Обработчик IPC](src/presentation/review/review-ipc.handler.ts)
-- [GitLabModule](src/gitlab/gitlab.module.ts) связывает сценарий подключения с адаптерами GitLab HTTP и Связки ключей. Входной адаптер проверяет окно-отправителя и возвращает интерфейсу состояние подключения. [Обработчик GitLab IPC](src/presentation/gitlab/gitlab-ipc.handler.ts)
+- Модули GitLab и GitHub используют общий сервис подключения и отдельные записи Связки ключей. GitHubModule также регистрирует сценарий открытия PR. [GitLabModule](src/gitlab/gitlab.module.ts) · [GitHubModule](src/github/github.module.ts)

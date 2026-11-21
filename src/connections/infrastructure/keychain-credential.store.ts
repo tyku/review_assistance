@@ -1,16 +1,19 @@
 import { spawn } from 'node:child_process';
-import { normalizeGitLabAddress, type GitLabCredentials } from '../domain/gitlab-account';
-import type { GitLabCredentialStore } from '../application/gitlab-connection';
+import type { Credentials, CredentialStore } from '../application/account-connection';
 
-export class KeychainCredentialStore implements GitLabCredentialStore {
-  constructor(private readonly helperPath: string) {}
+export class KeychainCredentialStore implements CredentialStore {
+  constructor(
+    private readonly helperPath: string,
+    private readonly provider: 'gitlab' | 'github',
+    private readonly normalizeAddress: (input: string) => string | undefined,
+  ) {}
 
-  async read(): Promise<GitLabCredentials | undefined> {
+  async read(): Promise<Credentials | undefined> {
     const result = await this.run('read');
     if (result === undefined) return;
-    const data: Partial<GitLabCredentials> | null = JSON.parse(result);
+    const data: Partial<Credentials> | null = JSON.parse(result);
     if (
-      typeof data?.address !== 'string' || normalizeGitLabAddress(data.address) !== data.address ||
+      typeof data?.address !== 'string' || this.normalizeAddress(data.address) !== data.address ||
       typeof data.token !== 'string' || !data.token || typeof data.username !== 'string'
     ) {
       throw new Error('Invalid Keychain entry');
@@ -18,7 +21,7 @@ export class KeychainCredentialStore implements GitLabCredentialStore {
     return { address: data.address, token: data.token, username: data.username };
   }
 
-  async write(credentials: GitLabCredentials): Promise<void> {
+  async write(credentials: Credentials): Promise<void> {
     await this.run('write', JSON.stringify(credentials));
   }
 
@@ -28,7 +31,7 @@ export class KeychainCredentialStore implements GitLabCredentialStore {
 
   private run(operation: 'read' | 'write' | 'remove', input?: string): Promise<string | undefined> {
     return new Promise((resolve, reject) => {
-      const child = spawn(this.helperPath, [operation], {
+      const child = spawn(this.helperPath, [operation, this.provider], {
         stdio: ['pipe', 'pipe', 'ignore'],
         timeout: 25_000,
       });

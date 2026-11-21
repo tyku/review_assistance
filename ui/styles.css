@@ -166,3 +166,16 @@ h1 { margin: 0; letter-spacing: -.028em; font-size: clamp(24px, 3vw, 34px); line
 .account-help { color: #5c6679; }
 .account-form .error { color: #b02b38; }
 .account-actions { margin-top: 8px; }
+
+.pr-form { margin-top: 24px; text-align: left; }
+.pr-form button { justify-self: start; }
+.welcome .pr-form p { margin: 0; }
+.diff-notice {
+  padding: 10px 12px;
+  margin: 0 0 12px;
+  border-radius: 8px;
+  background: #fbf4df;
+  color: #70531a;
+  font-size: 13px;
+}
+.diff-unavailable { padding: 14px; margin: 0; color: var(--muted); font-size: 13px; }
