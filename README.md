@@ -1,18 +1,28 @@
 # Review Assistance
 
-Версия 0.2.2 открывает локальный учебный merge request и показывает diff каждого файла.
+Версия 0.2.3 открывает локальный учебный merge request и показывает diff каждого файла.
 
 ## Запуск
 
-В рабочей папке проекта выполните `npm run dev`. На этом Mac для запуска уже подготовлена локальная копия среды Electron в `.local/`. Учебный MR читается с диска.
+В рабочей папке проекта выполните `npm run start:dev`. Nest CLI пересобирает TypeScript и перезапускает Electron после успешной компиляции. Команда `npm run dev` запускает тот же режим. На этом Mac уже подготовлена локальная копия Electron в `.local/`. Учебный MR читается с диска.
 
 Для нового checkout сначала установите зависимости и Electron.
 
 ```bash
 npm ci
 npm install --no-save electron@40.10.3
-npm run dev
+npm run start:dev
 ```
+
+| Команда | Что делает |
+| --- | --- |
+| `npm run build` | Собирает TypeScript в `dist/` через Nest CLI. |
+| `npm start` | Собирает проект и один раз запускает Electron. |
+| `npm run start:dev` | Следит за TypeScript, пересобирает проект и перезапускает Electron. |
+| `npm run start:debug` | Запускает режим разработки с отладчиком основного процесса Electron на `127.0.0.1:9229`. |
+| `npm run start:prod` | Запускает Electron из готовой сборки после `npm run build`. |
+
+Nest CLI запускает небольшой адаптер, который открывает проект в Electron. Electron загружает общий вход `src/main.ts` из сборки. [Конфигурация Nest CLI](nest-cli.json) · [Адаптер запуска](src/desktop/launch.ts)
 
 ## Проверка
 

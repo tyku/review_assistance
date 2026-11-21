@@ -5,6 +5,7 @@
     "moduleDetection": "legacy",
     "rootDir": "src",
     "outDir": "dist",
+    "sourceMap": true,
     "strict": true,
     "noEmitOnError": true,
     "experimentalDecorators": true,

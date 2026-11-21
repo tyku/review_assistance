@@ -20,7 +20,7 @@ function launch() {
   } catch (error) {
     const missing = error instanceof Error && 'code' in error && error.code === 'MODULE_NOT_FOUND';
     console.error(missing
-      ? 'Electron не установлен. Выполните npm install --no-save electron@40.10.3, затем npm run dev.'
+      ? 'Electron не установлен. Выполните npm install --no-save electron@40.10.3, затем npm run start:dev.'
       : 'Не удалось найти исполняемый файл Electron.');
     process.exitCode = 1;
     return;
