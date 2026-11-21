@@ -26,9 +26,14 @@ function prepareKeychainHelper(): void {
     const result = spawnSync('/usr/bin/clang', [
       source, '-framework', 'Security', '-framework', 'CoreFoundation', '-o', temporary,
     ], { timeout: 30_000 });
-    if (result.status === 0) renameSync(temporary, helper);
+    if (result.status === 0) {
+      renameSync(temporary, helper);
+      console.info('[Launcher] Keychain helper built.');
+    } else {
+      console.warn('[Launcher] Keychain helper build failed.');
+    }
   } catch {
-    // The connection screen offers session storage when the helper is unavailable.
+    console.warn('[Launcher] Keychain helper unavailable.');
   } finally {
     if (existsSync(temporary)) rmSync(temporary, { force: true });
   }
@@ -53,7 +58,9 @@ function launch() {
     console.error('Не удалось запустить Electron.');
     process.exitCode = 1;
   });
-  child.on('exit', (code) => {
+  child.on('exit', (code, signal) => {
+    if (signal === 'SIGTERM' || signal === 'SIGINT') console.info(`[Launcher] Electron stopped signal=${signal}`);
+    else if (code !== 0) console.warn(`[Launcher] Electron exited code=${code ?? 'none'} signal=${signal ?? 'none'}`);
     process.exitCode = code ?? 1;
   });
   process.once('SIGINT', () => child.kill('SIGINT'));

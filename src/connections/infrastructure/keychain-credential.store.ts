@@ -1,7 +1,10 @@
+import { Logger } from '@nestjs/common';
 import { spawn } from 'node:child_process';
 import type { Credentials, CredentialStore } from '../application/account-connection';
 
 export class KeychainCredentialStore implements CredentialStore {
+  private readonly logger = new Logger('Keychain');
+
   constructor(
     private readonly helperPath: string,
     private readonly provider: 'gitlab' | 'github',
@@ -11,11 +14,18 @@ export class KeychainCredentialStore implements CredentialStore {
   async read(): Promise<Credentials | undefined> {
     const result = await this.run('read');
     if (result === undefined) return;
-    const data: Partial<Credentials> | null = JSON.parse(result);
+    let data: Partial<Credentials> | null;
+    try {
+      data = JSON.parse(result);
+    } catch {
+      this.logger.error(`${this.provider} read failed reason=invalid-entry`);
+      throw new Error('Invalid Keychain entry');
+    }
     if (
       typeof data?.address !== 'string' || this.normalizeAddress(data.address) !== data.address ||
       typeof data.token !== 'string' || !data.token || typeof data.username !== 'string'
     ) {
+      this.logger.error(`${this.provider} read failed reason=invalid-entry`);
       throw new Error('Invalid Keychain entry');
     }
     return { address: data.address, token: data.token, username: data.username };
@@ -31,6 +41,8 @@ export class KeychainCredentialStore implements CredentialStore {
 
   private run(operation: 'read' | 'write' | 'remove', input?: string): Promise<string | undefined> {
     return new Promise((resolve, reject) => {
+      const activity = `${this.provider} ${operation}`;
+      this.logger.log(`${activity} started`);
       const child = spawn(this.helperPath, [operation, this.provider], {
         stdio: ['pipe', 'pipe', 'ignore'],
         timeout: 25_000,
@@ -39,11 +51,24 @@ export class KeychainCredentialStore implements CredentialStore {
       child.stdout.setEncoding('utf8');
       child.stdout.on('data', (data: string) => { output += data; });
       child.stdin.on('error', () => {});
-      child.on('error', () => reject(new Error('Keychain unavailable')));
-      child.on('close', (code) => {
-        if (code === 0) resolve(output);
-        else if (code === 2 && operation !== 'write') resolve(undefined);
-        else reject(new Error('Keychain unavailable'));
+      let startFailed = false;
+      child.once('error', () => {
+        startFailed = true;
+        this.logger.warn(`${activity} failed reason=helper-unavailable`);
+        reject(new Error('Keychain unavailable'));
+      });
+      child.once('close', (code, signal) => {
+        if (startFailed) return;
+        if (code === 0) {
+          this.logger.log(`${activity} completed`);
+          resolve(output);
+        } else if (code === 2 && operation !== 'write') {
+          this.logger.log(`${activity} completed entry=missing`);
+          resolve(undefined);
+        } else {
+          this.logger.warn(`${activity} failed exitCode=${code ?? 'none'} signal=${signal ?? 'none'}`);
+          reject(new Error('Keychain unavailable'));
+        }
       });
       child.stdin.end(input);
     });

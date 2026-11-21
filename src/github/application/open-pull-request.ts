@@ -1,19 +1,15 @@
-import type { AccountConnection, ValidationError } from '../../connections/application/account-connection';
-import type { Review } from '../../review/domain/review';
+import type { AccountConnection } from '../../connections/application/account-connection';
+import type { LinkedReviewData, LinkedReviewError, LinkedReviewResult } from '../../review/application/linked-review';
 import { parsePullRequestLink, type PullRequestRef } from '../domain/pull-request';
 
-export type PullRequestError = ValidationError | 'invalid-link' | 'not-connected' | 'storage' | 'not-found' | 'empty';
-type PullRequestData = { review: Review; incomplete: boolean };
-export type PullRequestResult = ({ ok: true } & PullRequestData) | { ok: false; error: PullRequestError };
-
 export interface PullRequestSource {
-  read(reference: PullRequestRef, token: string): Promise<PullRequestData | { error: PullRequestError }>;
+  read(reference: PullRequestRef, token: string): Promise<LinkedReviewData | { error: LinkedReviewError }>;
 }
 
 export class OpenPullRequest {
   constructor(private readonly connection: AccountConnection, private readonly source: PullRequestSource) {}
 
-  async execute(link: unknown): Promise<PullRequestResult> {
+  async execute(link: unknown): Promise<LinkedReviewResult> {
     const reference = parsePullRequestLink(link);
     if (!reference) return { ok: false, error: 'invalid-link' };
 

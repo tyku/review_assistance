@@ -31,8 +31,8 @@ export class DesktopWindow implements OnApplicationBootstrap, OnModuleDestroy {
   }
 
   private readonly onActivate = (): void => {
-    void this.open().catch((error: unknown) => {
-      this.logger.error('Не удалось открыть окно Review Assistance.', error);
+    void this.open().catch(() => {
+      this.logger.error('window reopen failed');
     });
   };
 
@@ -43,6 +43,7 @@ export class DesktopWindow implements OnApplicationBootstrap, OnModuleDestroy {
   private async open(): Promise<void> {
     if (this.window) return;
 
+    this.logger.log('window opening');
     const window = new BrowserWindow({
       width: 1260,
       height: 820,
@@ -58,13 +59,30 @@ export class DesktopWindow implements OnApplicationBootstrap, OnModuleDestroy {
     });
     this.window = window;
 
-    window.on('closed', () => { this.window = undefined; });
-    window.webContents.on('will-navigate', (event) => event.preventDefault());
-    window.webContents.setWindowOpenHandler(() => ({ action: 'deny' }));
+    window.on('closed', () => {
+      this.window = undefined;
+      this.logger.log('window closed');
+    });
+    window.webContents.on('will-navigate', (event) => {
+      this.logger.warn('navigation blocked');
+      event.preventDefault();
+    });
+    window.webContents.setWindowOpenHandler(() => {
+      this.logger.warn('new window blocked');
+      return { action: 'deny' };
+    });
+    window.webContents.on('render-process-gone', (_event, details) => {
+      this.logger.error(`renderer exited reason=${details.reason} exitCode=${details.exitCode}`);
+    });
+    window.webContents.on('preload-error', () => {
+      this.logger.error('preload failed');
+    });
 
     try {
       await window.loadFile(this.options.page);
+      this.logger.log('window ready');
     } catch (error) {
+      this.logger.error('window load failed');
       if (!window.isDestroyed()) window.destroy();
       throw error;
     }

@@ -1,6 +1,8 @@
 import { Module, type DynamicModule } from '@nestjs/common';
 import { AccountConnection } from '../connections/application/account-connection';
 import { KeychainCredentialStore } from '../connections/infrastructure/keychain-credential.store';
+import { OpenMergeRequest } from './application/open-merge-request';
+import { GitLabMergeRequestSource } from './infrastructure/gitlab-merge-request.source';
 import { normalizeGitLabAddress } from './domain/gitlab-account';
 import { GitLabHttpIdentity } from './infrastructure/gitlab-http.identity';
 
@@ -11,15 +13,24 @@ export class GitLabModule {
   static forKeychain(helperPath: string): DynamicModule {
     return {
       module: GitLabModule,
-      providers: [{
-        provide: GITLAB_CONNECTION,
-        useFactory: () => new AccountConnection(
-          new GitLabHttpIdentity(),
-          new KeychainCredentialStore(helperPath, 'gitlab', normalizeGitLabAddress),
-          normalizeGitLabAddress,
-        ),
-      }],
-      exports: [GITLAB_CONNECTION],
+      providers: [
+        GitLabMergeRequestSource,
+        {
+          provide: GITLAB_CONNECTION,
+          useFactory: () => new AccountConnection(
+            new GitLabHttpIdentity(),
+            new KeychainCredentialStore(helperPath, 'gitlab', normalizeGitLabAddress),
+            normalizeGitLabAddress,
+          ),
+        },
+        {
+          provide: OpenMergeRequest,
+          inject: [GITLAB_CONNECTION, GitLabMergeRequestSource],
+          useFactory: (connection: AccountConnection, source: GitLabMergeRequestSource) =>
+            new OpenMergeRequest(connection, source),
+        },
+      ],
+      exports: [GITLAB_CONNECTION, OpenMergeRequest],
     };
   }
 }

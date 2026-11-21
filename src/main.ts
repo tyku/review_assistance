@@ -1,14 +1,18 @@
 import 'reflect-metadata';
+import { Logger } from '@nestjs/common';
 import { NestFactory } from '@nestjs/core';
 import { app } from 'electron';
 import { AppModule } from './app.module';
 
+const logger = new Logger('ReviewAssistance');
+
 async function bootstrap(): Promise<void> {
+  logger.log('application starting');
   await app.whenReady();
 
   const starting = NestFactory.createApplicationContext(AppModule.forApp(app.getAppPath()), {
     abortOnError: false,
-    logger: ['error', 'warn'],
+    logger: ['log', 'warn', 'error'],
   });
 
   let closing = false;
@@ -16,19 +20,22 @@ async function bootstrap(): Promise<void> {
     event.preventDefault();
     if (closing) return;
     closing = true;
+    logger.log('application stopping');
 
     void starting.then((context) => context.close()).then(() => {
+      logger.log('application stopped');
       app.removeListener('before-quit', closeContext);
       app.quit();
-    }).catch(fail);
+    }).catch(() => fail('shutdown'));
   });
 
   await starting;
+  logger.log('application ready');
 }
 
-function fail(error: unknown): void {
-  console.error('Ошибка Review Assistance', error);
+function fail(phase: 'startup' | 'shutdown'): void {
+  logger.error(`application failed phase=${phase}`);
   app.exit(1);
 }
 
-void bootstrap().catch(fail);
+void bootstrap().catch(() => fail('startup'));

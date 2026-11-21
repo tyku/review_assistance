@@ -19,58 +19,41 @@
     </div>
   </header>
 
-  <dialog class="account-dialog" id="gitlab-dialog" aria-labelledby="gitlab-title">
+  <dialog class="account-dialog" id="account-dialog" aria-labelledby="account-title">
     <div class="account-header">
-      <h2 id="gitlab-title">Подключение GitLab</h2>
-      <button class="button button-secondary" id="gitlab-close" type="button">Закрыть</button>
+      <h2 id="account-title"></h2>
+      <button class="button button-secondary" id="account-close" type="button">Закрыть</button>
     </div>
-    <p id="gitlab-status" role="status"></p>
-    <form class="account-form" id="gitlab-form" autocomplete="off">
-      <label for="gitlab-address">Адрес GitLab</label>
-      <input id="gitlab-address" type="url" placeholder="https://gitlab.example.com" required>
-      <label for="gitlab-token">Токен на чтение</label>
-      <input id="gitlab-token" type="password" autocomplete="off" spellcheck="false" required>
-      <p class="account-help">Используйте персональный токен с правом <code>read_api</code>.</p>
-      <p class="error" id="gitlab-error" role="alert" hidden></p>
+    <p id="account-status" role="status"></p>
+    <form class="account-form" id="account-form" autocomplete="off">
+      <label for="account-address">Адрес сервиса</label>
+      <input id="account-address" type="url" required>
+      <label for="account-token">Токен на чтение</label>
+      <input id="account-token" type="password" autocomplete="off" spellcheck="false" required>
+      <p class="account-help">Используйте токен с правом <code id="account-permission"></code>.</p>
+      <p class="error" id="account-error" role="alert" hidden></p>
       <div class="account-actions">
-        <button class="button button-primary" id="gitlab-connect" type="submit">Подключить</button>
-        <button class="button button-secondary" id="gitlab-session" type="button" hidden>Только до выхода</button>
-        <button class="button button-secondary" id="gitlab-disconnect" type="button" hidden>Отключить</button>
+        <button class="button button-primary" id="account-connect" type="submit">Подключить</button>
+        <button class="button button-secondary" id="account-session" type="button" hidden>Только до выхода</button>
+        <button class="button button-secondary" id="account-disconnect" type="button" hidden>Отключить</button>
       </div>
     </form>
-  </dialog>
-
-  <dialog class="account-dialog" id="github-dialog" aria-labelledby="github-title">
-    <div class="account-header">
-      <h2 id="github-title">Подключение GitHub</h2>
-      <button class="button button-secondary" id="github-close" type="button">Закрыть</button>
-    </div>
-    <p id="github-status" role="status"></p>
-    <form class="account-form" id="github-form" autocomplete="off">
-      <label for="github-token">Токен на чтение</label>
-      <input id="github-token" type="password" autocomplete="off" spellcheck="false" required>
-      <p class="account-help">Используйте персональный токен с правом <code>Pull requests: Read-only</code>.</p>
-      <p class="error" id="github-error" role="alert" hidden></p>
-      <div class="account-actions">
-        <button class="button button-primary" id="github-connect" type="submit">Подключить</button>
-        <button class="button button-secondary" id="github-session" type="button" hidden>Только до выхода</button>
-        <button class="button button-secondary" id="github-disconnect" type="button" hidden>Отключить</button>
+    <form class="account-form pr-form" id="account-review-form" autocomplete="off">
+      <label for="account-review-link">Ссылка на ревью</label>
+      <div class="pr-form-fields">
+        <input id="account-review-link" type="url" aria-describedby="account-review-help" required>
+        <button class="button button-secondary" id="account-review-open" type="submit" disabled>Открыть</button>
       </div>
+      <p class="account-help" id="account-review-help"></p>
+      <p class="error" id="account-review-error" role="alert" hidden></p>
     </form>
   </dialog>
 
   <main class="shell">
     <section class="welcome" id="welcome" aria-labelledby="welcome-title">
-      <div class="welcome-icon" aria-hidden="true"><span>+</span><span>−</span></div>
-      <h1 id="welcome-title">Локальное ревью кода</h1>
-      <p>Откройте учебный merge request, чтобы посмотреть изменения в файлах.</p>
+      <h1 id="welcome-title">Ревью кода</h1>
+      <p>Откройте учебный пример, чтобы посмотреть изменения в файлах.</p>
       <button class="button button-primary" id="open" type="button">Открыть пример</button>
-      <form class="account-form pr-form" id="github-pr-form" autocomplete="off">
-        <label for="github-pr-link">Ссылка на GitHub PR</label>
-        <input id="github-pr-link" type="url" placeholder="https://github.com/owner/repo/pull/123" required>
-        <button class="button button-secondary" id="github-pr-open" type="submit">Открыть PR</button>
-        <p class="error" id="github-pr-error" role="alert" hidden></p>
-      </form>
       <p class="error" id="error" role="alert" hidden></p>
     </section>
 
@@ -89,7 +72,7 @@
             <h2 id="files-title">Изменённые файлы</h2>
             <span class="file-count" id="file-count"></span>
           </div>
-          <ul id="files"></ul>
+          <ul id="files" tabindex="0" aria-labelledby="files-title"></ul>
         </aside>
         <section class="diff" aria-labelledby="diff-title">
           <div class="panel-heading diff-heading">

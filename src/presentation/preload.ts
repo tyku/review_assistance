@@ -1,6 +1,6 @@
 import { contextBridge, ipcRenderer } from 'electron';
 import type { GITHUB_CHANNELS, GitHubBridge } from './github/github-ipc';
-import type { PullRequestResult } from '../github/application/open-pull-request';
+import type { LinkedReviewResult } from '../review/application/linked-review';
 import type { GITLAB_CHANNELS, GitLabBridge } from './gitlab/gitlab-ipc';
 import type { ConnectionResult } from '../connections/application/account-connection';
 import type { OPEN_EXAMPLE_CHANNEL, OpenExampleResult, ReviewBridge } from './review/review-ipc';
@@ -16,6 +16,7 @@ const channels: typeof GITLAB_CHANNELS = {
   useSession: 'gitlab:use-session',
   disconnect: 'gitlab:disconnect',
   discardPending: 'gitlab:discard-pending',
+  openMergeRequest: 'gitlab:open-merge-request',
 };
 
 const gitlab: GitLabBridge = {
@@ -24,6 +25,7 @@ const gitlab: GitLabBridge = {
   useSession: () => ipcRenderer.invoke(channels.useSession) as Promise<ConnectionResult>,
   disconnect: () => ipcRenderer.invoke(channels.disconnect) as Promise<ConnectionResult>,
   discardPending: () => ipcRenderer.invoke(channels.discardPending) as Promise<ConnectionResult>,
+  openMergeRequest: (link) => ipcRenderer.invoke(channels.openMergeRequest, link) as Promise<LinkedReviewResult>,
 };
 contextBridge.exposeInMainWorld('review', review);
 contextBridge.exposeInMainWorld('gitlab', gitlab);
@@ -43,6 +45,6 @@ const github: GitHubBridge = {
   useSession: () => ipcRenderer.invoke(githubChannels.useSession) as Promise<ConnectionResult>,
   disconnect: () => ipcRenderer.invoke(githubChannels.disconnect) as Promise<ConnectionResult>,
   discardPending: () => ipcRenderer.invoke(githubChannels.discardPending) as Promise<ConnectionResult>,
-  openPullRequest: (link) => ipcRenderer.invoke(githubChannels.openPullRequest, link) as Promise<PullRequestResult>,
+  openPullRequest: (link) => ipcRenderer.invoke(githubChannels.openPullRequest, link) as Promise<LinkedReviewResult>,
 };
 contextBridge.exposeInMainWorld('github', github);

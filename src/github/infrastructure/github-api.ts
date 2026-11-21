@@ -1,5 +1,7 @@
+import { requestWithActivity } from '../../infrastructure/logging/http-activity';
 import type { AccountIdentity } from '../../connections/application/account-connection';
-import type { PullRequestError, PullRequestSource } from '../application/open-pull-request';
+import type { PullRequestSource } from '../application/open-pull-request';
+import type { LinkedReviewError } from '../../review/application/linked-review';
 import type { PullRequestRef } from '../domain/pull-request';
 import { createReview, type FileDiff } from '../../review/domain/review';
 import { parseUnifiedDiff } from '../../review/infrastructure/unified-diff';
@@ -9,7 +11,7 @@ const PAGE_SIZE = 100;
 const FILE_LIMIT = 3000;
 
 class GitHubApiError extends Error {
-  constructor(readonly code: PullRequestError) {
+  constructor(readonly code: LinkedReviewError) {
     super(code);
   }
 }
@@ -58,7 +60,7 @@ export class GitHubApi implements AccountIdentity, PullRequestSource {
 
   async verify(_address: string, token: string): ReturnType<AccountIdentity['verify']> {
     try {
-      const data = object(await this.get('/user', token, AbortSignal.timeout(8000)));
+      const data = object(await this.get('check-account', '/user', token, AbortSignal.timeout(8000)));
       const username = string(data.login);
       if (!/^[\w.-]{1,256}$/.test(username) || username.includes(token)) return { error: 'invalid-server' };
       return { username };
@@ -77,14 +79,14 @@ export class GitHubApi implements AccountIdentity, PullRequestSource {
     const signal = AbortSignal.timeout(15000);
 
     try {
-      const pull = object(await this.get(path, token, signal));
+      const pull = object(await this.get('load-review', path, token, signal));
       const expected = count(pull.changed_files);
       if (expected === 0) return { error: 'empty' };
 
       const files: FileDiff[] = [];
       const limit = Math.min(expected, FILE_LIMIT);
       for (let page = 1; files.length < limit; page++) {
-        const values = await this.get(`${path}/files?per_page=${PAGE_SIZE}&page=${page}`, token, signal);
+        const values = await this.get('load-diffs', `${path}/files?per_page=${PAGE_SIZE}&page=${page}`, token, signal, page);
         if (!Array.isArray(values) || values.length > PAGE_SIZE) return { error: 'invalid-server' };
         files.push(...values.map(parseFile));
         if (values.length < PAGE_SIZE) break;
@@ -105,15 +107,21 @@ export class GitHubApi implements AccountIdentity, PullRequestSource {
     }
   }
 
-  private async get(path: string, token: string, signal: AbortSignal): Promise<unknown> {
+  private async get(
+    operation: 'check-account' | 'load-review' | 'load-diffs',
+    path: string,
+    token: string,
+    signal: AbortSignal,
+    page?: number,
+  ): Promise<unknown> {
     let response: Response;
     try {
-      response = await this.request(API + path, {
+      response = await requestWithActivity('GitHub', operation, () => this.request(API + path, {
         headers: { Authorization: `Bearer ${token}`, Accept: 'application/vnd.github+json' },
         redirect: 'manual',
         cache: 'no-store',
         signal,
-      });
+      }), page);
     } catch {
       throw new GitHubApiError('unreachable');
     }

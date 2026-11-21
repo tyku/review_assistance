@@ -15,12 +15,12 @@ export interface DiffHunk {
 export interface FileDiff {
   readonly path: string;
   readonly hunks: readonly DiffHunk[];
-  readonly unavailable?: { added: number; removed: number };
+  readonly unavailable?: { added?: number; removed?: number };
 }
 
 export interface ChangedFile extends FileDiff {
-  readonly added: number;
-  readonly removed: number;
+  readonly added?: number;
+  readonly removed?: number;
 }
 
 export interface ReviewDetails {

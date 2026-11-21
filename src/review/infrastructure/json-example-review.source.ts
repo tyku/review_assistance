@@ -1,3 +1,4 @@
+import { Logger } from '@nestjs/common';
 import { readFile } from 'node:fs/promises';
 import type { ExampleReviewSource } from '../application/open-example-review';
 import { createReview, type Review } from '../domain/review';
@@ -8,10 +9,26 @@ function isRecord(value: unknown): value is Record<string, unknown> {
 }
 
 export class JsonExampleReviewSource implements ExampleReviewSource {
+  private readonly logger = new Logger('ExampleReview');
+
   constructor(private readonly filename: string) {}
 
   async load(): Promise<Review> {
-    const data: unknown = JSON.parse(await readFile(this.filename, 'utf8'));
+    try {
+      return this.parse(await readFile(this.filename, 'utf8'));
+    } catch (error) {
+      const code = (error as NodeJS.ErrnoException | undefined)?.code;
+      const reason = code === 'ENOENT' ? 'missing-file'
+        : code === 'EACCES' || code === 'EPERM' ? 'access-denied'
+        : error instanceof SyntaxError ? 'invalid-json'
+        : code ? 'io-error' : 'invalid-example';
+      this.logger.warn(`sample load failed reason=${reason}`);
+      throw error;
+    }
+  }
+
+  private parse(source: string): Review {
+    const data: unknown = JSON.parse(source);
     if (!isRecord(data)) throw new Error('Invalid example');
 
     const { project, reference, title, sourceBranch, targetBranch, files } = data;

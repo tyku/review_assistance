@@ -5,7 +5,11 @@ export interface Credentials {
 }
 
 export type ValidationError = 'unauthorized' | 'forbidden' | 'redirect' | 'invalid-server' | 'unreachable';
-export type ConnectionError = ValidationError | 'invalid-address' | 'invalid-token' | 'storage';
+export type AccountVerificationError = ValidationError
+  | 'profile-read-denied'
+  | 'profile-scope-missing'
+  | 'profile-html-denial';
+export type ConnectionError = AccountVerificationError | 'invalid-address' | 'invalid-token' | 'storage';
 export type ConnectionStatus =
   | { connected: false }
   | { connected: true; address: string; username: string; storage: 'keychain' | 'session' };
@@ -14,7 +18,7 @@ export type ConnectionResult =
   | { ok: false; error: ConnectionError; canUseSession?: boolean };
 
 export interface AccountIdentity {
-  verify(address: string, token: string): Promise<{ username: string } | { error: ValidationError }>;
+  verify(address: string, token: string): Promise<{ username: string } | { error: AccountVerificationError }>;
 }
 
 export interface CredentialStore {

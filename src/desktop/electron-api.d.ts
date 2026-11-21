@@ -9,6 +9,11 @@ declare module 'electron' {
   interface WebContents {
     readonly mainFrame: WebFrameMain;
     on(event: 'will-navigate', listener: (event: QuitEvent) => void): void;
+    on(event: 'render-process-gone', listener: (
+      event: unknown,
+      details: { reason: string; exitCode: number },
+    ) => void): void;
+    on(event: 'preload-error', listener: () => void): void;
     setWindowOpenHandler(handler: () => { action: 'deny' }): void;
   }
 
