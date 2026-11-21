@@ -134,7 +134,7 @@ function showReview(example: ScreenReview, incomplete = false, source = 'Сер�
   const other: FileEntry[] = [];
 
   const extensionRule = { id: 'other-extension' satisfies FilterIds['OTHER_EXTENSION_FILTER'], entries: other };
-  const testRule = { id: 'test-path' satisfies FilterIds['TEST_PATH_FILTER'], entries: languageMode ? other : tests };
+  const testRule = { id: 'test-path' satisfies FilterIds['TEST_PATH_FILTER'], entries: tests };
   const formattingRule = { id: 'formatting-and-comments' satisfies FilterIds['FORMATTING_AND_COMMENTS_FILTER'], entries: formatting };
   const groupingRules = languageMode
     ? [extensionRule, formattingRule, testRule]
