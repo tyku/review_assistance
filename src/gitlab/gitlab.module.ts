@@ -1,3 +1,5 @@
+import { EvaluateReviewFilters } from '../review/application/evaluate-review-filters';
+import { ReviewFiltersModule } from '../review/review-filters.module';
 import { Module, type DynamicModule } from '@nestjs/common';
 import { AccountConnection } from '../connections/application/account-connection';
 import { KeychainCredentialStore } from '../connections/infrastructure/keychain-credential.store';
@@ -13,6 +15,7 @@ export class GitLabModule {
   static forKeychain(helperPath: string): DynamicModule {
     return {
       module: GitLabModule,
+      imports: [ReviewFiltersModule],
       providers: [
         GitLabMergeRequestSource,
         {
@@ -25,9 +28,9 @@ export class GitLabModule {
         },
         {
           provide: OpenMergeRequest,
-          inject: [GITLAB_CONNECTION, GitLabMergeRequestSource],
-          useFactory: (connection: AccountConnection, source: GitLabMergeRequestSource) =>
-            new OpenMergeRequest(connection, source),
+          inject: [GITLAB_CONNECTION, GitLabMergeRequestSource, EvaluateReviewFilters],
+          useFactory: (connection: AccountConnection, source: GitLabMergeRequestSource, filters: EvaluateReviewFilters) =>
+            new OpenMergeRequest(connection, source, filters),
         },
       ],
       exports: [GITLAB_CONNECTION, OpenMergeRequest],

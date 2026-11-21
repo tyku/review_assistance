@@ -117,7 +117,7 @@ h1 { margin: 0; letter-spacing: -.028em; font-size: clamp(24px, 3vw, 34px); line
   border-radius: 12px;
   background: #fff;
 }
-.files ul, .diff-scroll {
+.file-list-scroll, .diff-scroll {
   flex: 1;
   min-height: 0;
   overflow: auto;
@@ -127,7 +127,22 @@ h1 { margin: 0; letter-spacing: -.028em; font-size: clamp(24px, 3vw, 34px); line
 .panel-heading { flex: none; min-height: 54px; padding: 10px 14px; display: flex; align-items: center; justify-content: space-between; gap: 8px; border-bottom: 1px solid var(--border); }
 .panel-heading h2 { font-size: 13px; margin: 0; }
 .file-count { padding: 2px 7px; border-radius: 6px; background: #eef0f6; color: #45516b; font-size: 12px; }
-.files ul { list-style: none; padding: 6px; margin: 0; }
+.file-list-scroll, .file-group-list { list-style: none; margin: 0; }
+.file-list-scroll { padding: 6px; }
+.file-group-list { padding: 3px 0 0; }
+.file-list-scroll .file-group + .file-group { margin-top: 8px; border-top: 1px solid var(--border); padding-top: 4px; }
+.file-group summary {
+  padding: 9px 8px;
+  color: #344059;
+  font-size: 13px;
+  font-weight: 650;
+  border-radius: 7px;
+  cursor: pointer;
+}
+.file-group summary:hover { background: #f4f5f8; }
+.file-group summary:focus-visible { outline-offset: -2px; }
+.file-group summary .file-count { float: right; }
+.file-reason { display: block; margin-top: 6px; color: var(--muted); font-size: 11px; }
 .files li + li { margin-top: 3px; }
 .file-button {
   text-align: left;
@@ -150,7 +165,7 @@ h1 { margin: 0; letter-spacing: -.028em; font-size: clamp(24px, 3vw, 34px); line
 .removed { color: #a02b38; }
 .diff-heading { background: #fff; border-radius: 12px 12px 0 0; }
 .diff-heading h2 { overflow-wrap: anywhere; font-family: var(--mono); }
-.files ul:focus-visible, .diff-scroll:focus-visible { outline-offset: -2px; }
+.file-list-scroll:focus-visible, .diff-scroll:focus-visible { outline-offset: -2px; }
 .diff-table { border-collapse: collapse; width: 100%; font: 12px/1.55 var(--mono); }
 .diff-table th { color: var(--muted); text-align: left; background: #f9fafc; font-size: 11px; font-weight: 600; }
 .diff-table th, .diff-table td { padding: 3px 10px; white-space: pre; }

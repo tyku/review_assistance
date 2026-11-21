@@ -30,15 +30,17 @@ function string(value: unknown): string {
 function parseFile(value: unknown): FileDiff {
   const file = object(value);
   const path = string(file.new_path ?? file.old_path);
+  const structuralChange = file.new_file === true || file.deleted_file === true || file.renamed_file === true ||
+    (typeof file.a_mode === 'string' && typeof file.b_mode === 'string' && file.a_mode !== file.b_mode);
   if (!file.collapsed && !file.too_large && typeof file.diff === 'string' && file.diff) {
     try {
       const hunks = parseUnifiedDiff(file.diff.replace(/\r?\n$/, ''));
-      if (hunks.some((hunk) => hunk.lines.some((line) => line.marker !== ' '))) return { path, hunks };
+      if (hunks.some((hunk) => hunk.lines.some((line) => line.marker !== ' '))) return { path, hunks, structuralChange };
     } catch {
       // Keep files with missing or truncated patches in the review.
     }
   }
-  return { path, hunks: [], unavailable: {} };
+  return { path, hunks: [], unavailable: {}, structuralChange };
 }
 
 export class GitLabMergeRequestSource implements MergeRequestSource {
@@ -80,7 +82,7 @@ export class GitLabMergeRequestSource implements MergeRequestSource {
         sourceBranch: string(merge.source_branch),
         targetBranch: string(merge.target_branch),
       }, files);
-      return { review, incomplete: incomplete || files.some((file) => file.unavailable) };
+      return { review, coverageIncomplete: incomplete, incomplete: incomplete || files.some((file) => file.unavailable) };
     } catch (error) {
       return { error: error instanceof GitLabDiffError ? error.code : 'invalid-server' };
     }

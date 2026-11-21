@@ -1,3 +1,5 @@
+import type { FileFilterAssessment } from './file-filter';
+
 export type DiffMarker = ' ' | '-' | '+';
 
 export interface DiffLine {
@@ -15,10 +17,12 @@ export interface DiffHunk {
 export interface FileDiff {
   readonly path: string;
   readonly hunks: readonly DiffHunk[];
+  readonly structuralChange?: boolean;
   readonly unavailable?: { added?: number; removed?: number };
 }
 
 export interface ChangedFile extends FileDiff {
+  readonly filterResults?: readonly FileFilterAssessment[];
   readonly added?: number;
   readonly removed?: number;
 }
@@ -41,19 +45,20 @@ export function createReview(details: ReviewDetails, diffs: readonly FileDiff[])
   }
 
   const paths = new Set<string>();
-  const files = diffs.map(({ path, hunks, unavailable }) => {
+  const files = diffs.map(({ path, hunks, unavailable, structuralChange }) => {
     if (!path.trim() || paths.has(path)) {
       throw new Error('Invalid or duplicate file path');
     }
     paths.add(path);
 
-    if (unavailable) return { path, hunks, added: unavailable.added, removed: unavailable.removed, unavailable };
+    const diff = { path, hunks, ...(structuralChange ? { structuralChange } : {}) };
+    if (unavailable) return { ...diff, added: unavailable.added, removed: unavailable.removed, unavailable };
 
     const lines = hunks.flatMap((hunk) => hunk.lines);
     const added = lines.filter((line) => line.marker === '+').length;
     const removed = lines.filter((line) => line.marker === '-').length;
     if (added + removed === 0) throw new Error('File has no changes');
-    return { path, hunks, added, removed };
+    return { ...diff, added, removed };
   });
 
   const [first, ...rest] = files;

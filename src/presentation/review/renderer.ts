@@ -1,5 +1,12 @@
 type ScreenReview = import('../../review/domain/review').Review;
 type ScreenFile = import('../../review/domain/review').ChangedFile;
+type FilterIds = typeof import('../../review/domain/file-filter');
+
+interface FileEntry {
+  file: ScreenFile;
+  entry: HTMLLIElement;
+  button: HTMLButtonElement;
+}
 
 interface Window {
   readonly review: import('./review-ipc').ReviewBridge;
@@ -87,6 +94,21 @@ function showDiff(file: ScreenFile, button: HTMLButtonElement, source: string) {
   diffScroll.scrollTo(0, 0);
 }
 
+function fileGroup(label: string, entries: HTMLLIElement[], expanded: boolean): HTMLLIElement {
+  const group = element('li', 'file-group');
+  const details = element('details');
+  details.open = expanded;
+
+  const summary = element('summary', '', label);
+  summary.prepend(element('span', 'file-count', entries.length));
+
+  const list = element('ul', 'file-group-list');
+  list.append(...entries);
+  details.append(summary, list);
+  group.append(details);
+  return group;
+}
+
 function showReview(example: ScreenReview, incomplete = false, source = 'Сервис') {
   const notice = byId('diff-notice');
   notice.textContent = incomplete ? `${source} вернул неполные изменения. Некоторые файлы или строки могут отсутствовать.` : '';
@@ -99,7 +121,18 @@ function showReview(example: ScreenReview, incomplete = false, source = 'Сер�
   byId('file-count').textContent = String(example.files.length);
   selectedButton = undefined;
 
-  const entries = example.files.map((file) => {
+  const primary: FileEntry[] = [];
+  const tests: FileEntry[] = [];
+  const formatting: FileEntry[] = [];
+  const other: FileEntry[] = [];
+
+  const groupingRules = [
+    { id: 'other-extension' satisfies FilterIds['OTHER_EXTENSION_FILTER'], entries: other },
+    { id: 'test-path' satisfies FilterIds['TEST_PATH_FILTER'], entries: tests },
+    { id: 'formatting-and-comments' satisfies FilterIds['FORMATTING_AND_COMMENTS_FILTER'], entries: formatting },
+  ];
+
+  for (const file of example.files) {
     const entry = element('li');
     const button = element('button', 'file-button');
     button.type = 'button';
@@ -113,17 +146,38 @@ function showReview(example: ScreenReview, incomplete = false, source = 'Сер�
     counts.append(...stats(file));
     details.append(directory, counts);
     button.append(name, details);
+    const target = groupingRules.find(({ id }) =>
+      file.filterResults?.some((result) => result.filterId === id && result.outcome === 'match'),
+    );
+    const reason = file.filterResults?.find((result) => result.filterId === target?.id)?.reason;
+    if (reason) button.append(element('span', 'file-reason', reason));
     button.addEventListener('click', () => showDiff(file, button, source));
     entry.append(button);
-    return { entry, button };
-  });
+    (target?.entries ?? primary).push({ file, entry, button });
+  }
 
-  fileList.replaceChildren(...entries.map(({ entry }) => entry));
+  fileList.replaceChildren();
+  const groups = [
+    { label: 'К просмотру', entries: primary, expanded: true },
+    { label: 'Тесты', entries: tests, expanded: true },
+    { label: 'Только оформление и комментарии', entries: formatting, expanded: false },
+    { label: 'Прочее', entries: other, expanded: false },
+  ];
+  for (const { label, entries, expanded } of groups) {
+    if (entries.length > 0) fileList.append(fileGroup(label, entries.map(({ entry }) => entry), expanded));
+  }
   welcome.hidden = true;
   reviewScreen.hidden = false;
   fileList.scrollTo(0, 0);
   backButton.hidden = false;
-  showDiff(example.files[0], entries[0].button, source);
+  const first = primary[0] ?? tests[0];
+  if (first) {
+    showDiff(first.file, first.button, source);
+  } else {
+    byId('diff-title').textContent = 'Diff файла';
+    byId('diff-stats').replaceChildren();
+    diffScroll.replaceChildren(element('p', 'diff-unavailable', 'Раскройте список и выберите файл.'));
+  }
   byId('review-title').focus();
 }
 

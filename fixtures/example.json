@@ -15,11 +15,27 @@
     },
     {
       "path": "src/orders/states.ts",
-      "patch": "@@ -1,3 +1,7 @@\n-export const ORDER_STATES = [\"created\",\"paid\",\"shipped\"] as const;\n+export const ORDER_STATES = [\n+  \"created\",\n+  \"paid\",\n+  \"shipped\",\n+] as const;\n \n export type OrderState = (typeof ORDER_STATES)[number];"
+      "patch": "@@ -1,2 +1,2 @@\n-// Состояния заказа.\n+// Состояния заказа по порядку обработки.\n export const ORDER_STATES = [\"created\", \"paid\", \"shipped\"] as const;"
     },
     {
-      "path": "config/checkout.yml",
-      "patch": "@@ -1,5 +1,5 @@\n checkout:\n   currency: RUB\n   allow_guest_checkout: true\n-  require_verified_email: false\n+  require_verified_email: true\n   session_timeout_minutes: 30"
+      "path": "config/labels.json",
+      "patch": "@@ -1,4 +1,4 @@\n {\n-\"created\": \"Новый\",\n-\"paid\": \"Оплачен\"\n+  \"created\": \"Новый\",\n+  \"paid\": \"Оплачен\"\n }"
+    },
+    {
+      "path": "config/checkout.json",
+      "patch": "@@ -1,4 +1,4 @@\n {\n-  \"currency\": \"RUB\",\n-  \"session_timeout_minutes\": 30\n+    \"currency\": \"RUB\",\n+    \"session_timeout_minutes\": 5\n }"
+    },
+    {
+      "path": "src/orders/audit.ts",
+      "patch": "@@ -1,2 +1,3 @@\n import { auditOrder } from \"./audit-client\";\n+// eslint-disable-next-line @typescript-eslint/no-unused-vars\n const recordOrder = auditOrder;"
+    },
+    {
+      "path": "config/checkout.rules",
+      "patch": "@@ -1,2 +1,2 @@\n-allow guest_checkout\n-limit checkout_sessions 30\n+  allow guest_checkout\n+  limit checkout_sessions 30"
+    },
+    {
+      "path": "tests/orders/manual.md",
+      "patch": "@@ -1,2 +1,2 @@\n # Проверка заказа\n-Проверьте сумму заказа ниже порога.\n+Проверьте сумму заказа ровно на пороге."
     }
   ]
 }

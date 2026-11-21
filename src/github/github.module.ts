@@ -1,3 +1,5 @@
+import { EvaluateReviewFilters } from '../review/application/evaluate-review-filters';
+import { ReviewFiltersModule } from '../review/review-filters.module';
 import { Module, type DynamicModule } from '@nestjs/common';
 import { AccountConnection } from '../connections/application/account-connection';
 import { KeychainCredentialStore } from '../connections/infrastructure/keychain-credential.store';
@@ -12,6 +14,7 @@ export class GitHubModule {
   static forKeychain(helperPath: string): DynamicModule {
     return {
       module: GitHubModule,
+      imports: [ReviewFiltersModule],
       providers: [
         GitHubApi,
         {
@@ -25,8 +28,9 @@ export class GitHubModule {
         },
         {
           provide: OpenPullRequest,
-          inject: [GITHUB_CONNECTION, GitHubApi],
-          useFactory: (connection: AccountConnection, api: GitHubApi) => new OpenPullRequest(connection, api),
+          inject: [GITHUB_CONNECTION, GitHubApi, EvaluateReviewFilters],
+          useFactory: (connection: AccountConnection, api: GitHubApi, filters: EvaluateReviewFilters) =>
+            new OpenPullRequest(connection, api, filters),
         },
       ],
       exports: [GITHUB_CONNECTION, OpenPullRequest],

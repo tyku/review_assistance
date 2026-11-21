@@ -38,6 +38,7 @@ function count(value: unknown): number {
 function parseFile(value: unknown): FileDiff {
   const file = object(value);
   const path = string(file.filename);
+  const structuralChange = typeof file.status === 'string' && file.status !== 'modified';
   const added = count(file.additions);
   const removed = count(file.deletions);
   if (typeof file.patch === 'string') {
@@ -46,13 +47,13 @@ function parseFile(value: unknown): FileDiff {
       const lines = hunks.flatMap((hunk) => hunk.lines);
       if (lines.filter((line) => line.marker === '+').length === added &&
           lines.filter((line) => line.marker === '-').length === removed && added + removed > 0) {
-        return { path, hunks };
+        return { path, hunks, structuralChange };
       }
     } catch {
       // GitHub can omit a patch or return an incomplete patch.
     }
   }
-  return { path, hunks: [], unavailable: { added, removed } };
+  return { path, hunks: [], unavailable: { added, removed }, structuralChange };
 }
 
 export class GitHubApi implements AccountIdentity, PullRequestSource {

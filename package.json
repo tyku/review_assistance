@@ -1,6 +1,6 @@
 {
   "name": "review-assistance",
-  "version": "0.5.4",
+  "version": "0.6.3",
   "private": true,
   "productName": "Review Assistance",
   "main": "dist/main.js",
@@ -10,18 +10,19 @@
     "start:dev": "nest start --watch",
     "start:debug": "nest start --watch -- --inspect=127.0.0.1:9229",
     "start:prod": "node dist/desktop/launch.js",
-    "dev": "npm run start:dev -- --"
+    "dev": "npm run start:dev -- --",
+    "test": "npm run build && node --test"
   },
   "dependencies": {
     "@nestjs/common": "11.1.27",
     "@nestjs/core": "11.1.27",
     "reflect-metadata": "0.2.2",
-    "rxjs": "7.8.2"
+    "rxjs": "7.8.2",
+    "typescript": "5.9.3"
   },
   "devDependencies": {
     "@nestjs/cli": "11.0.23",
-    "@types/node": "24.13.2",
-    "typescript": "5.9.3"
+    "@types/node": "24.13.2"
   },
   "peerDependencies": {
     "electron": "40.10.3"
