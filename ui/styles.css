@@ -137,3 +137,32 @@ h1 { margin: 0; letter-spacing: -.028em; font-size: clamp(24px, 3vw, 34px); line
 .removed-line { background: #fdeff0; }
 .added-line .line-marker { color: #17653d; }
 .removed-line .line-marker { color: #a02b38; }
+
+.app-actions, .account-actions { display: flex; flex-wrap: wrap; gap: 8px; }
+.account-dialog {
+  width: min(480px, calc(100% - 40px));
+  padding: 24px;
+  border: 1px solid var(--border);
+  border-radius: 14px;
+  color: inherit;
+  box-shadow: 0 18px 58px #17254030;
+}
+.account-dialog::backdrop { background: #17254070; }
+.account-header { display: flex; align-items: center; justify-content: space-between; gap: 12px; }
+.account-header h2 { margin: 0; font-size: 19px; }
+.account-dialog p { font-size: 13px; line-height: 1.5; overflow-wrap: anywhere; }
+.account-form { display: grid; gap: 8px; }
+.account-form label { font-size: 13px; font-weight: 650; }
+.account-form input {
+  width: 100%;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 9px 10px;
+  font: inherit;
+  font-size: 14px;
+}
+.account-form input + label { margin-top: 6px; }
+.account-form p { margin: 0; }
+.account-help { color: #5c6679; }
+.account-form .error { color: #b02b38; }
+.account-actions { margin-top: 8px; }

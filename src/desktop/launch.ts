@@ -1,5 +1,5 @@
-import { existsSync, realpathSync } from 'node:fs';
-import { spawn } from 'node:child_process';
+import { existsSync, mkdirSync, realpathSync, renameSync, rmSync, statSync } from 'node:fs';
+import { spawn, spawnSync } from 'node:child_process';
 import { join, resolve } from 'node:path';
 
 const root = resolve(__dirname, '..', '..');
@@ -11,6 +11,27 @@ function findElectron(): string {
   const installed: unknown = require('electron');
   if (typeof installed !== 'string') throw new Error('Invalid Electron executable');
   return installed;
+}
+
+function prepareKeychainHelper(): void {
+  if (process.platform !== 'darwin') return;
+
+  const directory = join(root, '.local', 'bin');
+  const helper = join(directory, 'gitlab-keychain');
+  const source = join(root, 'native', 'gitlab-keychain.c');
+  const temporary = helper + '.' + process.pid;
+  try {
+    if (existsSync(helper) && statSync(helper).mtimeMs >= statSync(source).mtimeMs) return;
+    mkdirSync(directory, { recursive: true, mode: 0o700 });
+    const result = spawnSync('/usr/bin/clang', [
+      source, '-framework', 'Security', '-framework', 'CoreFoundation', '-o', temporary,
+    ], { timeout: 30_000 });
+    if (result.status === 0) renameSync(temporary, helper);
+  } catch {
+    // The connection screen offers session storage when the helper is unavailable.
+  } finally {
+    if (existsSync(temporary)) rmSync(temporary, { force: true });
+  }
 }
 
 function launch() {
@@ -26,6 +47,7 @@ function launch() {
     return;
   }
 
+  prepareKeychainHelper();
   const child = spawn(executable, [root, ...process.argv.slice(2)], { cwd: root, stdio: 'inherit' });
   child.on('error', () => {
     console.error('Не удалось запустить Electron.');

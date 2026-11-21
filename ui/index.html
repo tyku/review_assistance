@@ -7,12 +7,37 @@
   <title>Review Assistance</title>
   <link rel="stylesheet" href="./styles.css">
   <script defer src="../dist/presentation/review/renderer.js"></script>
+  <script defer src="../dist/presentation/gitlab/renderer.js"></script>
 </head>
 <body>
   <header class="app-bar">
     <div class="brand"><span class="brand-icon" aria-hidden="true">±</span> Review Assistance</div>
-    <button class="button button-secondary" id="back" type="button" hidden>К началу</button>
+    <div class="app-actions">
+      <button class="button button-secondary" id="gitlab-settings" type="button">GitLab</button>
+      <button class="button button-secondary" id="back" type="button" hidden>К началу</button>
+    </div>
   </header>
+
+  <dialog class="account-dialog" id="gitlab-dialog" aria-labelledby="gitlab-title">
+    <div class="account-header">
+      <h2 id="gitlab-title">Подключение GitLab</h2>
+      <button class="button button-secondary" id="gitlab-close" type="button">Закрыть</button>
+    </div>
+    <p id="gitlab-status" role="status"></p>
+    <form class="account-form" id="gitlab-form" autocomplete="off">
+      <label for="gitlab-address">Адрес GitLab</label>
+      <input id="gitlab-address" type="url" placeholder="https://gitlab.example.com" required>
+      <label for="gitlab-token">Токен на чтение</label>
+      <input id="gitlab-token" type="password" autocomplete="off" spellcheck="false" required>
+      <p class="account-help">Используйте персональный токен с правом <code>read_api</code>.</p>
+      <p class="error" id="gitlab-error" role="alert" hidden></p>
+      <div class="account-actions">
+        <button class="button button-primary" id="gitlab-connect" type="submit">Подключить</button>
+        <button class="button button-secondary" id="gitlab-session" type="button" hidden>Только до выхода</button>
+        <button class="button button-secondary" id="gitlab-disconnect" type="button" hidden>Отключить</button>
+      </div>
+    </form>
+  </dialog>
 
   <main class="shell">
     <section class="welcome" id="welcome" aria-labelledby="welcome-title">

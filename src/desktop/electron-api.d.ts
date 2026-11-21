@@ -50,12 +50,12 @@ declare module 'electron' {
   }
 
   export const ipcMain: {
-    handle(channel: string, listener: (event: IpcMainInvokeEvent) => Promise<unknown>): void;
+    handle(channel: string, listener: (event: IpcMainInvokeEvent, ...args: unknown[]) => Promise<unknown>): void;
     removeHandler(channel: string): void;
   };
 
   export const ipcRenderer: {
-    invoke(channel: string): Promise<unknown>;
+    invoke(channel: string, ...args: unknown[]): Promise<unknown>;
   };
 
   export const contextBridge: {
