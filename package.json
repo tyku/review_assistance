@@ -1,0 +1,29 @@
+{
+  "name": "review-assistance",
+  "version": "0.2.1",
+  "private": true,
+  "productName": "Review Assistance",
+  "main": "dist/desktop/main.js",
+  "scripts": {
+    "build": "tsc -p tsconfig.json",
+    "dev": "npm run build && node dist/desktop/dev.js"
+  },
+  "dependencies": {
+    "@nestjs/common": "11.1.27",
+    "@nestjs/core": "11.1.27",
+    "reflect-metadata": "0.2.2",
+    "rxjs": "7.8.2"
+  },
+  "devDependencies": {
+    "@types/node": "24.13.2",
+    "typescript": "5.9.3"
+  },
+  "peerDependencies": {
+    "electron": "40.10.3"
+  },
+  "peerDependenciesMeta": {
+    "electron": {
+      "optional": true
+    }
+  }
+}

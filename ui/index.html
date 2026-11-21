@@ -1,0 +1,53 @@
+<!doctype html>
+<html lang="ru">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'self'; style-src 'self'; base-uri 'none'; form-action 'none'">
+  <title>Review Assistance</title>
+  <link rel="stylesheet" href="./styles.css">
+  <script defer src="../dist/desktop/renderer.js"></script>
+</head>
+<body>
+  <header class="app-bar">
+    <div class="brand"><span class="brand-icon" aria-hidden="true">±</span> Review Assistance</div>
+    <button class="button button-secondary" id="back" type="button" hidden>К началу</button>
+  </header>
+
+  <main class="shell">
+    <section class="welcome" id="welcome" aria-labelledby="welcome-title">
+      <div class="welcome-icon" aria-hidden="true"><span>+</span><span>−</span></div>
+      <h1 id="welcome-title">Локальное ревью кода</h1>
+      <p>Откройте учебный merge request, чтобы посмотреть изменения в файлах.</p>
+      <button class="button button-primary" id="open" type="button">Открыть пример</button>
+      <p class="error" id="error" role="alert" hidden></p>
+    </section>
+
+    <section class="review" id="review" aria-labelledby="review-title" hidden>
+      <header class="review-header">
+        <div class="breadcrumbs"><span id="project"></span><span aria-hidden="true">/</span><span id="reference"></span></div>
+        <h1 id="review-title" tabindex="-1"></h1>
+        <div class="branch-row">
+          <code id="source-branch"></code><span aria-hidden="true">→</span><span class="sr-only">в ветку</span><code id="target-branch"></code>
+        </div>
+      </header>
+      <div class="review-grid">
+        <aside class="files" aria-labelledby="files-title">
+          <div class="panel-heading files-heading">
+            <h2 id="files-title">Изменённые файлы</h2>
+            <span class="file-count" id="file-count"></span>
+          </div>
+          <ul id="files"></ul>
+        </aside>
+        <section class="diff" aria-labelledby="diff-title">
+          <div class="panel-heading diff-heading">
+            <h2 id="diff-title"></h2>
+            <span class="stats" id="diff-stats"></span>
+          </div>
+          <div class="diff-scroll" id="diff-scroll" tabindex="0" role="region" aria-label="Строки diff"></div>
+        </section>
+      </div>
+    </section>
+  </main>
+</body>
+</html>
