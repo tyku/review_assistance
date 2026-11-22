@@ -2,7 +2,7 @@ import { requestWithActivity } from '../../infrastructure/logging/http-activity'
 import type { AccountIdentity } from '../../connections/application/account-connection';
 import type { PullRequestSource } from '../application/open-pull-request';
 import type { LinkedReviewError } from '../../review/application/linked-review';
-import type { PullRequestRef } from '../domain/pull-request';
+import { GITHUB_ADDRESS, type PullRequestRef } from '../domain/pull-request';
 import { createReview, type FileDiff } from '../../review/domain/review';
 import { parseUnifiedDiff } from '../../review/infrastructure/unified-diff';
 
@@ -95,6 +95,7 @@ export class GitHubApi implements AccountIdentity, PullRequestSource {
       if (!files.length) return { error: 'invalid-server' };
 
       const review = createReview({
+        sourceAddress: GITHUB_ADDRESS,
         project: `${owner}/${repository}`,
         reference: `PR #${number}`,
         title: string(pull.title),

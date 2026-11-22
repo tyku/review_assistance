@@ -2,11 +2,17 @@ type ScreenReview = import('../../review/domain/review').Review;
 type ScreenFile = import('../../review/domain/review').ChangedFile;
 type FilterIds = typeof import('../../review/domain/file-filter');
 type LanguageSortingStatus = import('../../review/application/linked-review').LanguageSortingStatus;
+type FileProgress = import('../../review/application/review-progress').FileProgress;
+type ReviewProgressSnapshot = import('../../review/application/review-progress').ReviewProgressSnapshot;
 
 interface FileEntry {
   file: ScreenFile;
   entry: HTMLLIElement;
   button: HTMLButtonElement;
+  visitCount: HTMLSpanElement;
+  viewedMark: HTMLSpanElement;
+  progress?: FileProgress;
+  savingViewed?: boolean;
 }
 
 interface Window {
@@ -25,8 +31,12 @@ const backButton = byId('back');
 const errorMessage = byId('error');
 const fileList = byId('files');
 const diffScroll = byId('diff-scroll');
+const diffToggle = byId('diff-toggle');
+const diffPath = byId('diff-path');
 const nextFileButton = byId('next-file') as HTMLButtonElement;
 const readingPosition = byId('reading-position');
+const viewedControl = byId('file-viewed') as HTMLInputElement;
+const progressNotice = byId('progress-notice');
 
 let selectedButton: HTMLButtonElement | undefined;
 
@@ -50,13 +60,21 @@ function stats(file: ScreenFile) {
   return [added, removed];
 }
 
+function setDiffExpanded(expanded: boolean) {
+  diffScroll.hidden = !expanded;
+  diffToggle.setAttribute('aria-expanded', String(expanded));
+}
+
+diffToggle.addEventListener('click', () => setDiffExpanded(diffScroll.hidden));
+
 function showDiff(file: ScreenFile, button: HTMLButtonElement, source: string) {
   if (button === selectedButton) return;
   selectedButton?.setAttribute('aria-pressed', 'false');
   button.setAttribute('aria-pressed', 'true');
   selectedButton = button;
 
-  byId('diff-title').textContent = file.path;
+  diffPath.textContent = file.path;
+  diffScroll.hidden = false;
   byId('diff-stats').replaceChildren(...stats(file));
   if (file.unavailable) {
     diffScroll.replaceChildren(element('p', 'diff-unavailable', `${source} не вернул полный diff этого файла.`));
@@ -112,7 +130,7 @@ function fileGroup(label: string, entries: HTMLLIElement[], expanded: boolean): 
   return group;
 }
 
-function showReview(example: ScreenReview, linkedReview?: {
+function showReview(example: ScreenReview, progress?: ReviewProgressSnapshot, linkedReview?: {
   source: string;
   incomplete: boolean;
   languageSorting?: LanguageSortingStatus;
@@ -140,6 +158,9 @@ function showReview(example: ScreenReview, linkedReview?: {
   const formatting: FileEntry[] = [];
   const other: FileEntry[] = [];
   const entriesByPath = new Map<string, FileEntry>();
+  const progressByPath = new Map(progress?.files.map((file) => [file.path, file]));
+  progressNotice.hidden = progress !== undefined;
+  progressNotice.textContent = 'Не удалось загрузить прогресс. Откройте ревью заново, чтобы повторить.';
 
   const extensionRule = { id: 'other-extension' satisfies FilterIds['OTHER_EXTENSION_FILTER'], entries: other };
   const testRule = { id: 'test-path' satisfies FilterIds['TEST_PATH_FILTER'], entries: tests };
@@ -157,12 +178,17 @@ function showReview(example: ScreenReview, linkedReview?: {
 
     const lastSlash = file.path.lastIndexOf('/');
     const name = element('span', 'file-name', file.path.slice(lastSlash + 1));
+    const visitCount = element('span', 'file-visit-count');
+    const viewedMark = element('span', 'file-viewed-mark', '✓');
+    viewedMark.setAttribute('aria-label', 'Просмотрен');
+    const fileLabel = element('span', 'file-label');
+    fileLabel.append(name, visitCount, viewedMark);
     const details = element('span', 'file-details');
     const directory = element('span', 'directory', file.path.slice(0, lastSlash + 1));
     const counts = element('span', 'stats');
     counts.append(...stats(file));
     details.append(directory, counts);
-    button.append(name, details);
+    button.append(fileLabel, details);
     const target = groupingRules.find(({ id }) =>
       file.filterResults?.some((result) => result.filterId === id && result.outcome === 'match'),
     );
@@ -173,7 +199,8 @@ function showReview(example: ScreenReview, linkedReview?: {
     if (!target && fallback === other) reason = language?.reason ?? 'Язык файла не распознан';
     if (reason) button.append(element('span', 'file-reason', reason));
     entry.append(button);
-    const fileEntry = { file, entry, button };
+    const fileEntry = { file, entry, button, visitCount, viewedMark, progress: progressByPath.get(file.path) };
+    updateFileProgress(fileEntry);
     entriesByPath.set(file.path, fileEntry);
     (target?.entries ?? fallback).push(fileEntry);
   }
@@ -200,19 +227,56 @@ function showReview(example: ScreenReview, linkedReview?: {
   backButton.hidden = false;
   const queue = linkedReview ? groups.flatMap(({ entries }) => entries.map(({ file }) => file.path)) : example.readingOrder;
   let position = 0;
-  function selectFile(fileEntry: FileEntry, index: number) {
+
+  function updateFileProgress(fileEntry: FileEntry) {
+    const opens = fileEntry.progress?.opens ?? 0;
+    fileEntry.visitCount.textContent = `×${opens}`;
+    fileEntry.visitCount.setAttribute('aria-label', `Открытий: ${opens}`);
+    fileEntry.visitCount.hidden = opens < 2;
+    fileEntry.viewedMark.hidden = !fileEntry.progress?.viewed;
+  }
+
+  function updateViewedControl(fileEntry: FileEntry) {
+    viewedControl.checked = fileEntry.progress?.viewed ?? false;
+    viewedControl.disabled = !fileEntry.progress || Boolean(fileEntry.savingViewed);
+  }
+
+  async function saveProgress(fileEntry: FileEntry, viewed?: boolean) {
+    if (!progress || !fileEntry.progress) return;
+    if (viewed !== undefined) {
+      fileEntry.savingViewed = true;
+      viewedControl.disabled = true;
+    }
+    try {
+      const result = await window.review.updateProgress(progress.key, fileEntry.file.path, fileEntry.progress.fingerprint, viewed);
+      if (!result.ok) throw new Error('Progress not saved');
+      fileEntry.progress = result.fileProgress;
+      updateFileProgress(fileEntry);
+      if (fileList.contains(fileEntry.entry)) progressNotice.hidden = true;
+      if (viewed !== undefined && selectedButton === fileEntry.button) setDiffExpanded(!result.fileProgress.viewed);
+    } catch {
+      if (fileList.contains(fileEntry.entry)) {
+        progressNotice.textContent = 'Не удалось сохранить прогресс. Повторите действие или откройте ревью заново.';
+        progressNotice.hidden = false;
+      }
+    } finally {
+      if (viewed !== undefined) fileEntry.savingViewed = false;
+      if (selectedButton === fileEntry.button) updateViewedControl(fileEntry);
+    }
+  }
+
+  function openQueueFile(index: number, countOpening = true) {
+    const fileEntry = entriesByPath.get(queue[index]);
+    if (!fileEntry || selectedButton === fileEntry.button) return;
+    const group = fileEntry.entry.closest('details');
+    if (group) group.open = true;
     position = index;
     readingPosition.textContent = `${position + 1} из ${queue.length}`;
     nextFileButton.disabled = position === queue.length - 1;
     showDiff(fileEntry.file, fileEntry.button, source);
-  }
-
-  function openQueueFile(index: number) {
-    const fileEntry = entriesByPath.get(queue[index]);
-    if (!fileEntry) return;
-    const group = fileEntry.entry.closest('details');
-    if (group) group.open = true;
-    selectFile(fileEntry, index);
+    setDiffExpanded(!fileEntry.progress?.viewed);
+    updateViewedControl(fileEntry);
+    if (countOpening) void saveProgress(fileEntry);
     fileEntry.button.scrollIntoView({ block: 'nearest' });
   }
 
@@ -220,7 +284,12 @@ function showReview(example: ScreenReview, linkedReview?: {
     entriesByPath.get(path)?.button.addEventListener('click', () => openQueueFile(index));
   });
   nextFileButton.onclick = () => openQueueFile(position + 1);
-  openQueueFile(0);
+  viewedControl.onchange = () => {
+    const fileEntry = entriesByPath.get(queue[position]);
+    if (fileEntry) void saveProgress(fileEntry, viewedControl.checked);
+  };
+  const restoredIndex = progress?.restoredPath ? queue.indexOf(progress.restoredPath) : -1;
+  openQueueFile(Math.max(0, restoredIndex), !progress?.hasOpenedFile);
   byId('review-title').focus();
 }
 
@@ -231,7 +300,7 @@ openButton.addEventListener('click', async () => {
   try {
     const result = await window.review.openExample();
     if (!result.ok) throw new Error('Example unavailable');
-    showReview(result.example);
+    showReview(result.example, result.progress);
   } catch {
     errorMessage.textContent = 'Не удалось открыть учебный MR. Проверьте, что файл fixtures/example.json на месте и не повреждён, затем попробуйте снова.';
     errorMessage.hidden = false;

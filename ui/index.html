@@ -76,13 +76,20 @@
         </aside>
         <section class="diff" aria-labelledby="diff-title">
           <div class="panel-heading diff-heading">
-            <h2 id="diff-title"></h2>
+            <h2 id="diff-title">
+              <button class="diff-toggle" id="diff-toggle" type="button" aria-controls="diff-scroll" aria-expanded="true">
+                <span class="diff-toggle-icon" aria-hidden="true"></span>
+                <span id="diff-path"></span>
+              </button>
+            </h2>
             <div class="diff-actions">
               <span class="stats" id="diff-stats"></span>
+              <label class="viewed-control"><input type="checkbox" id="file-viewed" disabled> Просмотрен</label>
               <span class="reading-position" id="reading-position" aria-live="polite"></span>
               <button class="button button-secondary" id="next-file" type="button">Дальше</button>
             </div>
           </div>
+          <p class="progress-notice" id="progress-notice" role="status" hidden></p>
           <div class="diff-scroll" id="diff-scroll" tabindex="0" role="region" aria-label="Строки diff"></div>
         </section>
       </div>

@@ -23,7 +23,7 @@ export class AppModule {
         }),
         GitLabModule.forKeychain(keychain, join(userData, 'repository-languages')),
         GitHubModule.forKeychain(keychain),
-        ReviewModule.forFixture(join(root, 'fixtures', 'example.json')),
+        ReviewModule.forFixture(join(root, 'fixtures', 'example.json'), join(userData, 'review-progress')),
       ],
     };
   }

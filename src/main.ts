@@ -7,6 +7,10 @@ import { AppModule } from './app.module';
 const logger = new Logger('ReviewAssistance');
 
 async function bootstrap(): Promise<void> {
+  if (!app.requestSingleInstanceLock()) {
+    app.quit();
+    return;
+  }
   logger.log('application starting');
   await app.whenReady();
 

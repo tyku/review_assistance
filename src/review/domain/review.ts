@@ -29,6 +29,7 @@ export interface ChangedFile extends FileDiff {
 }
 
 export interface ReviewDetails {
+  readonly sourceAddress?: string;
   readonly project: string;
   readonly reference: string;
   readonly title: string;

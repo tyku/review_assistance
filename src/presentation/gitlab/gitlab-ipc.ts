@@ -1,6 +1,6 @@
 import type { ConnectionResult } from '../../connections/application/account-connection';
 
-import type { LinkedReviewResult } from '../../review/application/linked-review';
+import type { LinkedReviewScreenResult } from '../review/review-ipc';
 
 export const GITLAB_CHANNELS = {
   status: 'gitlab:status',
@@ -17,5 +17,5 @@ export interface GitLabBridge {
   useSession(): Promise<ConnectionResult>;
   disconnect(): Promise<ConnectionResult>;
   discardPending(): Promise<ConnectionResult>;
-  openMergeRequest(link: string): Promise<LinkedReviewResult>;
+  openMergeRequest(link: string): Promise<LinkedReviewScreenResult>;
 }

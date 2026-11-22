@@ -1,5 +1,5 @@
 import type { ConnectionResult } from '../../connections/application/account-connection';
-import type { LinkedReviewResult } from '../../review/application/linked-review';
+import type { LinkedReviewScreenResult } from '../review/review-ipc';
 
 export const GITHUB_CHANNELS = {
   status: 'github:status',
@@ -16,5 +16,5 @@ export interface GitHubBridge {
   useSession(): Promise<ConnectionResult>;
   disconnect(): Promise<ConnectionResult>;
   discardPending(): Promise<ConnectionResult>;
-  openPullRequest(link: string): Promise<LinkedReviewResult>;
+  openPullRequest(link: string): Promise<LinkedReviewScreenResult>;
 }

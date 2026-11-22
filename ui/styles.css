@@ -158,6 +158,10 @@ h1 { margin: 0; letter-spacing: -.028em; font-size: clamp(24px, 3vw, 34px); line
 .file-button[aria-pressed="true"] { border-color: #d5dcff; background: #edf0ff; }
 .file-button:focus-visible { outline-offset: -2px; }
 .file-name { display: block; font-size: 13px; font-weight: 650; overflow-wrap: anywhere; }
+.file-label { display: flex; align-items: baseline; gap: 6px; }
+.file-visit-count, .file-viewed-mark { flex: none; font-size: 11px; }
+.file-visit-count { border-radius: 4px; padding: 1px 4px; color: var(--muted); background: #eef0f6; }
+.file-viewed-mark { margin-left: auto; color: #17653d; }
 .file-details { display: flex; justify-content: space-between; gap: 6px; margin-top: 5px; }
 .directory { color: var(--muted); font: 11px var(--mono); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .stats { flex: none; display: inline-flex; gap: 8px; align-items: center; font: 600 11px var(--mono); }
@@ -165,7 +169,17 @@ h1 { margin: 0; letter-spacing: -.028em; font-size: clamp(24px, 3vw, 34px); line
 .removed { color: #a02b38; }
 .diff-heading { background: #fff; border-radius: 12px 12px 0 0; }
 .diff-heading h2 { overflow-wrap: anywhere; font-family: var(--mono); }
-.diff-actions { display: flex; flex: 0 0 auto; align-items: center; gap: 10px; }
+.diff:has(.diff-scroll[hidden]) { align-self: start; }
+.diff:has(.diff-scroll[hidden]) .diff-heading { border-radius: 12px; border-bottom: 0; }
+.diff-toggle { display: flex; align-items: baseline; gap: 8px; padding: 4px; color: inherit; text-align: left; background: transparent; border: 0; border-radius: 4px; }
+.diff-toggle:hover { background: #f4f5f8; }
+.diff-toggle-icon { flex: none; width: 6px; height: 6px; border: solid currentColor; border-width: 0 1.5px 1.5px 0; transform: rotate(-45deg); }
+.diff-toggle[aria-expanded="true"] .diff-toggle-icon { transform: translateY(-2px) rotate(45deg); }
+.diff:has(.diff-scroll[hidden]) .progress-notice { border-top: 1px solid var(--border); border-bottom: 0; }
+.diff-actions { display: flex; flex-wrap: wrap; justify-content: end; align-items: center; gap: 8px; }
+.viewed-control { display: inline-flex; gap: 4px; align-items: center; white-space: nowrap; font-size: 12px; }
+.viewed-control input { accent-color: var(--accent); }
+.progress-notice { margin: 0; padding: 8px 14px; border-bottom: 1px solid var(--border); color: var(--muted); font-size: 12px; }
 .reading-position { color: var(--muted); font-size: 12px; white-space: nowrap; }
 #next-file:disabled { cursor: default; }
 .file-list-scroll:focus-visible, .diff-scroll:focus-visible { outline-offset: -2px; }

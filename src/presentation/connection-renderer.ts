@@ -212,7 +212,7 @@ interface Window {
       if (active !== view || !dialog.open) return;
       if (result.ok) {
         dialog.close();
-        showReview(result.review, {
+        showReview(result.review, result.progress, {
           source: service.name,
           incomplete: result.incomplete,
           languageSorting: result.languageSorting,

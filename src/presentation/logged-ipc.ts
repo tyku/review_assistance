@@ -3,9 +3,10 @@ import { ipcMain } from 'electron';
 import type { ConnectionResult } from '../connections/application/account-connection';
 import type { DesktopWindow } from '../desktop/infrastructure/desktop-window';
 import type { LinkedReviewResult } from '../review/application/linked-review';
-import type { OpenExampleResult } from './review/review-ipc';
+import type { ProgressResult } from '../review/application/review-progress';
+import { UPDATE_PROGRESS_CHANNEL, type OpenExampleResult } from './review/review-ipc';
 
-type ActionResult = ConnectionResult | LinkedReviewResult | OpenExampleResult;
+type ActionResult = ConnectionResult | LinkedReviewResult | OpenExampleResult | ProgressResult;
 
 const logger = new Logger('DesktopActions');
 
@@ -21,7 +22,7 @@ export function registerLoggedIpc(
     }
 
     const started = performance.now();
-    logger.log(`${channel} started`);
+    if (channel !== UPDATE_PROGRESS_CHANNEL) logger.log(`${channel} started`);
     try {
       const result = await execute(...args);
       const duration = `durationMs=${Math.round(performance.now() - started)}`;
@@ -36,10 +37,12 @@ export function registerLoggedIpc(
         else logger.log(summary);
       } else if ('example' in result) {
         logger.log(`${channel} completed files=${result.example.files.length} ${duration}`);
-      } else {
+      } else if ('status' in result) {
         const { status } = result;
         const storage = status.connected ? ` storage=${status.storage}` : '';
         logger.log(`${channel} completed connected=${status.connected}${storage} ${duration}`);
+      } else {
+        logger.debug(`${channel} completed ${duration}`);
       }
       return result;
     } catch {

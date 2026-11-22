@@ -6,6 +6,8 @@ import type { AccountConnection } from '../../connections/application/account-co
 import { OpenMergeRequest } from '../../gitlab/application/open-merge-request';
 import { GITLAB_CONNECTION } from '../../gitlab/gitlab.module';
 import { GITLAB_CHANNELS } from './gitlab-ipc';
+import { ReviewProgress } from '../../review/application/review-progress';
+import { readReviewProgress } from '../review/read-review-progress';
 
 @Injectable()
 export class GitLabIpcHandler implements OnModuleInit, OnModuleDestroy {
@@ -13,6 +15,7 @@ export class GitLabIpcHandler implements OnModuleInit, OnModuleDestroy {
     private readonly window: DesktopWindow,
     @Inject(GITLAB_CONNECTION) private readonly connection: AccountConnection,
     private readonly mergeRequest: OpenMergeRequest,
+    private readonly progress: ReviewProgress,
   ) {}
 
   onModuleInit(): void {
@@ -21,7 +24,11 @@ export class GitLabIpcHandler implements OnModuleInit, OnModuleDestroy {
     registerLoggedIpc(this.window, GITLAB_CHANNELS.useSession, () => this.connection.useSession());
     registerLoggedIpc(this.window, GITLAB_CHANNELS.disconnect, () => this.connection.disconnect());
     registerLoggedIpc(this.window, GITLAB_CHANNELS.discardPending, () => this.connection.discardPending());
-    registerLoggedIpc(this.window, GITLAB_CHANNELS.openMergeRequest, (link) => this.mergeRequest.execute(link));
+    registerLoggedIpc(this.window, GITLAB_CHANNELS.openMergeRequest, async (link) => {
+      const result = await this.mergeRequest.execute(link);
+      if (!result.ok) return result;
+      return { ...result, progress: await readReviewProgress(this.progress, result.review) };
+    });
   }
 
   onModuleDestroy(): void {

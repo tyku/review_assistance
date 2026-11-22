@@ -76,6 +76,7 @@ export class GitLabMergeRequestSource implements MergeRequestSource {
       if (files.length === 0) return { error: incomplete ? 'diff-unavailable' : 'empty' };
 
       const review = createReview({
+        sourceAddress: address,
         project,
         reference: `MR !${number}`,
         title: string(merge.title),

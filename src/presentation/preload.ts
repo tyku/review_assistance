@@ -1,13 +1,16 @@
 import { contextBridge, ipcRenderer } from 'electron';
 import type { GITHUB_CHANNELS, GitHubBridge } from './github/github-ipc';
-import type { LinkedReviewResult } from '../review/application/linked-review';
+import type { ProgressResult } from '../review/application/review-progress';
 import type { GITLAB_CHANNELS, GitLabBridge } from './gitlab/gitlab-ipc';
 import type { ConnectionResult } from '../connections/application/account-connection';
-import type { OPEN_EXAMPLE_CHANNEL, OpenExampleResult, ReviewBridge } from './review/review-ipc';
+import type { LinkedReviewScreenResult, OPEN_EXAMPLE_CHANNEL, UPDATE_PROGRESS_CHANNEL, OpenExampleResult, ReviewBridge } from './review/review-ipc';
 
 const exampleChannel: typeof OPEN_EXAMPLE_CHANNEL = 'review:open-example';
+const progressChannel: typeof UPDATE_PROGRESS_CHANNEL = 'review:update-progress';
 const review: ReviewBridge = {
   openExample: () => ipcRenderer.invoke(exampleChannel) as Promise<OpenExampleResult>,
+  updateProgress: (key, path, fingerprint, viewed) =>
+    ipcRenderer.invoke(progressChannel, key, path, fingerprint, viewed) as Promise<ProgressResult>,
 };
 
 const channels: typeof GITLAB_CHANNELS = {
@@ -25,7 +28,7 @@ const gitlab: GitLabBridge = {
   useSession: () => ipcRenderer.invoke(channels.useSession) as Promise<ConnectionResult>,
   disconnect: () => ipcRenderer.invoke(channels.disconnect) as Promise<ConnectionResult>,
   discardPending: () => ipcRenderer.invoke(channels.discardPending) as Promise<ConnectionResult>,
-  openMergeRequest: (link) => ipcRenderer.invoke(channels.openMergeRequest, link) as Promise<LinkedReviewResult>,
+  openMergeRequest: (link) => ipcRenderer.invoke(channels.openMergeRequest, link) as Promise<LinkedReviewScreenResult>,
 };
 contextBridge.exposeInMainWorld('review', review);
 contextBridge.exposeInMainWorld('gitlab', gitlab);
@@ -45,6 +48,6 @@ const github: GitHubBridge = {
   useSession: () => ipcRenderer.invoke(githubChannels.useSession) as Promise<ConnectionResult>,
   disconnect: () => ipcRenderer.invoke(githubChannels.disconnect) as Promise<ConnectionResult>,
   discardPending: () => ipcRenderer.invoke(githubChannels.discardPending) as Promise<ConnectionResult>,
-  openPullRequest: (link) => ipcRenderer.invoke(githubChannels.openPullRequest, link) as Promise<LinkedReviewResult>,
+  openPullRequest: (link) => ipcRenderer.invoke(githubChannels.openPullRequest, link) as Promise<LinkedReviewScreenResult>,
 };
 contextBridge.exposeInMainWorld('github', github);
