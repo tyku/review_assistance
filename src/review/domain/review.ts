@@ -1,4 +1,5 @@
 import type { FileFilterAssessment } from './file-filter';
+import { buildReadingOrder } from './reading-order';
 
 export type DiffMarker = ' ' | '-' | '+';
 
@@ -37,6 +38,7 @@ export interface ReviewDetails {
 
 export interface Review extends ReviewDetails {
   readonly files: readonly [ChangedFile, ...ChangedFile[]];
+  readonly readingOrder: readonly string[];
 }
 
 export function createReview(details: ReviewDetails, diffs: readonly FileDiff[]): Review {
@@ -63,5 +65,5 @@ export function createReview(details: ReviewDetails, diffs: readonly FileDiff[])
 
   const [first, ...rest] = files;
   if (!first) throw new Error('Review has no files');
-  return { ...details, files: [first, ...rest] };
+  return { ...details, files: [first, ...rest], readingOrder: buildReadingOrder(files) };
 }

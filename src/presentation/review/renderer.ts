@@ -25,6 +25,8 @@ const backButton = byId('back');
 const errorMessage = byId('error');
 const fileList = byId('files');
 const diffScroll = byId('diff-scroll');
+const nextFileButton = byId('next-file') as HTMLButtonElement;
+const readingPosition = byId('reading-position');
 
 let selectedButton: HTMLButtonElement | undefined;
 
@@ -110,7 +112,12 @@ function fileGroup(label: string, entries: HTMLLIElement[], expanded: boolean): 
   return group;
 }
 
-function showReview(example: ScreenReview, incomplete = false, source = 'Сервис', languageSorting?: LanguageSortingStatus) {
+function showReview(example: ScreenReview, linkedReview?: {
+  source: string;
+  incomplete: boolean;
+  languageSorting?: LanguageSortingStatus;
+}) {
+  const { source = 'Сервис', incomplete, languageSorting } = linkedReview ?? {};
   const languageMode = languageSorting === 'available';
   const messages: string[] = [];
   if (incomplete) messages.push(`${source} вернул неполные изменения. Некоторые файлы или строки могут отсутствовать.`);
@@ -132,6 +139,7 @@ function showReview(example: ScreenReview, incomplete = false, source = 'Сер�
   const tests: FileEntry[] = [];
   const formatting: FileEntry[] = [];
   const other: FileEntry[] = [];
+  const entriesByPath = new Map<string, FileEntry>();
 
   const extensionRule = { id: 'other-extension' satisfies FilterIds['OTHER_EXTENSION_FILTER'], entries: other };
   const testRule = { id: 'test-path' satisfies FilterIds['TEST_PATH_FILTER'], entries: tests };
@@ -164,9 +172,10 @@ function showReview(example: ScreenReview, incomplete = false, source = 'Сер�
     if (languageMode && target === testRule) reason = 'Тест';
     if (!target && fallback === other) reason = language?.reason ?? 'Язык файла не распознан';
     if (reason) button.append(element('span', 'file-reason', reason));
-    button.addEventListener('click', () => showDiff(file, button, source));
     entry.append(button);
-    (target?.entries ?? fallback).push({ file, entry, button });
+    const fileEntry = { file, entry, button };
+    entriesByPath.set(file.path, fileEntry);
+    (target?.entries ?? fallback).push(fileEntry);
   }
 
   fileList.replaceChildren();
@@ -176,6 +185,12 @@ function showReview(example: ScreenReview, incomplete = false, source = 'Сер�
     { label: 'Только оформление и комментарии', entries: formatting, expanded: false },
     { label: languageMode ? 'Остальное' : 'Прочее', entries: other, expanded: false },
   ];
+  if (linkedReview) {
+    const rank = new Map(example.readingOrder.map((path, index) => [path, index]));
+    for (const { entries } of groups) {
+      entries.sort((left, right) => rank.get(left.file.path)! - rank.get(right.file.path)!);
+    }
+  }
   for (const { label, entries, expanded } of groups) {
     if (entries.length > 0) fileList.append(fileGroup(label, entries.map(({ entry }) => entry), expanded));
   }
@@ -183,14 +198,29 @@ function showReview(example: ScreenReview, incomplete = false, source = 'Сер�
   reviewScreen.hidden = false;
   fileList.scrollTo(0, 0);
   backButton.hidden = false;
-  const first = primary[0] ?? tests[0];
-  if (first) {
-    showDiff(first.file, first.button, source);
-  } else {
-    byId('diff-title').textContent = 'Diff файла';
-    byId('diff-stats').replaceChildren();
-    diffScroll.replaceChildren(element('p', 'diff-unavailable', 'Раскройте список и выберите файл.'));
+  const queue = linkedReview ? groups.flatMap(({ entries }) => entries.map(({ file }) => file.path)) : example.readingOrder;
+  let position = 0;
+  function selectFile(fileEntry: FileEntry, index: number) {
+    position = index;
+    readingPosition.textContent = `${position + 1} из ${queue.length}`;
+    nextFileButton.disabled = position === queue.length - 1;
+    showDiff(fileEntry.file, fileEntry.button, source);
   }
+
+  function openQueueFile(index: number) {
+    const fileEntry = entriesByPath.get(queue[index]);
+    if (!fileEntry) return;
+    const group = fileEntry.entry.closest('details');
+    if (group) group.open = true;
+    selectFile(fileEntry, index);
+    fileEntry.button.scrollIntoView({ block: 'nearest' });
+  }
+
+  queue.forEach((path, index) => {
+    entriesByPath.get(path)?.button.addEventListener('click', () => openQueueFile(index));
+  });
+  nextFileButton.onclick = () => openQueueFile(position + 1);
+  openQueueFile(0);
   byId('review-title').focus();
 }
 

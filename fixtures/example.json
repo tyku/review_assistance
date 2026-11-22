@@ -36,6 +36,14 @@
     {
       "path": "tests/orders/manual.md",
       "patch": "@@ -1,2 +1,2 @@\n # Проверка заказа\n-Проверьте сумму заказа ниже порога.\n+Проверьте сумму заказа ровно на пороге."
+    },
+    {
+      "path": "src/orders/delivery.repository.ts",
+      "patch": "@@ -1,3 +1,3 @@\n export function saveDelivery(orderId: string, feeCents: number) {\n-  return db.orders.update(orderId, { deliveryFeeCents: feeCents || null });\n+  return db.orders.update(orderId, { deliveryFeeCents: feeCents });\n }"
+    },
+    {
+      "path": "src/orders/delivery.controller.ts",
+      "patch": "@@ -1,6 +1,7 @@\n import { deliveryFee } from './delivery';\n+import { saveDelivery } from './delivery.repository';\n \n export function updateDelivery(orderId: string, subtotalCents: number) {\n   const feeCents = deliveryFee(subtotalCents, 499);\n-  return { orderId, feeCents };\n+  return saveDelivery(orderId, feeCents);\n }"
     }
   ]
 }

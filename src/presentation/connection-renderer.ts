@@ -212,7 +212,11 @@ interface Window {
       if (active !== view || !dialog.open) return;
       if (result.ok) {
         dialog.close();
-        showReview(result.review, result.incomplete, service.name, result.languageSorting);
+        showReview(result.review, {
+          source: service.name,
+          incomplete: result.incomplete,
+          languageSorting: result.languageSorting,
+        });
       } else {
         reviewError.textContent = reviewMessage(view, result.error);
         reviewError.hidden = false;
