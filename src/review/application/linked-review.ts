@@ -14,11 +14,8 @@ export type LinkedReviewError = ValidationError
   | 'empty'
   | 'diff-unavailable';
 
-export type LanguageSortingStatus = 'available' | 'empty' | 'forbidden' | 'unavailable';
-
 export type LinkedReviewData = {
   review: Review;
   incomplete: boolean;
-  languageSorting?: LanguageSortingStatus;
 };
 export type LinkedReviewResult = ({ ok: true } & LinkedReviewData) | { ok: false; error: LinkedReviewError };

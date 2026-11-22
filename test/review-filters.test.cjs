@@ -97,11 +97,11 @@ test('a second test-only filter can be registered without changing the built-in 
 test('production path filters cover the requested extensions, case, overlaps and incomplete files', async () => {
   const context = await NestFactory.createApplicationContext(ReviewFiltersModule, { logger: false });
   try {
-    const paths = [
+    const otherPaths = [
       'docs/a.md', 'docs/a.txt', 'image/a.PNG', 'image/a.jpg', 'image/a.jpeg',
-      'image/a.tiff', 'build/a.log', 'tests/a.pdf', 'src/SpecHelpers/a.ts',
-      'a.test.ts', 'src/main.ts', 'src/readme.md.ts',
+      'image/a.tiff', 'build/a.log', 'tests/a.pdf', 'src/old.ts.BAK', 'profile/capture.cpu', 'tests/alloc.heap',
     ];
+    const paths = [...otherPaths, 'src/SpecHelpers/a.ts', 'a.test.ts', 'src/main.ts', 'src/readme.md.ts'];
     const linked = createReview({
       project: 'test', reference: 'MR !2', title: 'Path filters', sourceBranch: 'change', targetBranch: 'main',
     }, paths.map((path) => ({ path, hunks: [], unavailable: {} })));
@@ -110,8 +110,8 @@ test('production path filters cover the requested extensions, case, overlaps and
       .filter(({ filterResults }) => filterResults.some((item) => item.filterId === filterId && item.outcome === 'match'))
       .map(({ path }) => path);
 
-    assert.deepEqual(matches(OTHER_EXTENSION_FILTER), paths.slice(0, 8));
-    assert.deepEqual(matches(TEST_PATH_FILTER), ['tests/a.pdf', 'src/SpecHelpers/a.ts', 'a.test.ts']);
+    assert.deepEqual(matches(OTHER_EXTENSION_FILTER), otherPaths);
+    assert.deepEqual(matches(TEST_PATH_FILTER), ['tests/a.pdf', 'tests/alloc.heap', 'src/SpecHelpers/a.ts', 'a.test.ts']);
     assert.deepEqual(matches(FORMATTING_AND_COMMENTS_FILTER), []);
   } finally {
     await context.close();

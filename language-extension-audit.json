@@ -1,0 +1,592 @@
+{
+  "metadata_and_configuration": {
+    "app": {
+      "language_in_catalog": "Erlang",
+      "reason": "Дескриптор приложения Erlang/OTP и его шаблон."
+    },
+    "app.src": {
+      "language_in_catalog": "Erlang",
+      "reason": "Дескриптор приложения Erlang/OTP и его шаблон."
+    },
+    "bicepparam": {
+      "language_in_catalog": "Bicep",
+      "reason": "Входные параметры развёртывания Bicep."
+    },
+    "emacs.desktop": {
+      "language_in_catalog": "Emacs Lisp",
+      "reason": "Сохранённое состояние сеанса Emacs."
+    },
+    "gyp": {
+      "language_in_catalog": "Python",
+      "reason": "Входные данные генератора сборки GYP."
+    },
+    "gypi": {
+      "language_in_catalog": "Python",
+      "reason": "Входные данные генератора сборки GYP."
+    },
+    "hcl": {
+      "language_in_catalog": "HCL",
+      "reason": "Конфигурации инфраструктуры и заданий в синтаксисе HCL."
+    },
+    "lid": {
+      "language_in_catalog": "Dylan",
+      "reason": "Описание библиотеки и список файлов проекта Dylan."
+    },
+    "lkml": {
+      "language_in_catalog": "LookML",
+      "reason": "Описание модели и параметров Looker."
+    },
+    "lookml": {
+      "language_in_catalog": "LookML",
+      "reason": "Описание модели и параметров Looker."
+    },
+    "lvclass": {
+      "language_in_catalog": "LabVIEW",
+      "reason": "Описания класса, библиотеки и проекта LabVIEW."
+    },
+    "lvlib": {
+      "language_in_catalog": "LabVIEW",
+      "reason": "Описания класса, библиотеки и проекта LabVIEW."
+    },
+    "lvproj": {
+      "language_in_catalog": "LabVIEW",
+      "reason": "Описания класса, библиотеки и проекта LabVIEW."
+    },
+    "maxproj": {
+      "language_in_catalog": "Max",
+      "reason": "Описание проекта Max."
+    },
+    "mpl": {
+      "language_in_catalog": "JetBrains MPS",
+      "reason": "Дескрипторы языка и решения JetBrains MPS."
+    },
+    "msd": {
+      "language_in_catalog": "JetBrains MPS",
+      "reason": "Дескрипторы языка и решения JetBrains MPS."
+    },
+    "nim.cfg": {
+      "language_in_catalog": "Nim",
+      "reason": "Параметры компилятора Nim."
+    },
+    "nomad": {
+      "language_in_catalog": "HCL",
+      "reason": "Конфигурации инфраструктуры и заданий в синтаксисе HCL."
+    },
+    "pbt": {
+      "language_in_catalog": "PowerBuilder",
+      "reason": "Описание цели сборки PowerBuilder."
+    },
+    "psd1": {
+      "language_in_catalog": "PowerShell",
+      "reason": "Данные и манифесты PowerShell."
+    },
+    "rbuistate": {
+      "language_in_catalog": "REALbasic",
+      "reason": "Состояние интерфейса IDE REALbasic."
+    },
+    "rktd": {
+      "language_in_catalog": "Racket",
+      "reason": "Сериализованные данные Racket."
+    },
+    "tf": {
+      "language_in_catalog": "HCL",
+      "reason": "Конфигурации инфраструктуры и заданий в синтаксисе HCL."
+    },
+    "tfvars": {
+      "language_in_catalog": "HCL",
+      "reason": "Значения входных переменных Terraform и OpenTofu."
+    },
+    "tofu": {
+      "language_in_catalog": "HCL",
+      "reason": "Конфигурации инфраструктуры и заданий в синтаксисе HCL."
+    },
+    "zig.zon": {
+      "language_in_catalog": "Zig",
+      "reason": "Данные в формате Zig Object Notation, включая манифесты пакетов."
+    }
+  },
+  "documentation_and_session": {
+    "ihlp": {
+      "language_in_catalog": "Stata",
+      "reason": "Файлы справки Stata."
+    },
+    "rd": {
+      "language_in_catalog": "R",
+      "reason": "Документация пакетов R в формате Rd."
+    },
+    "rhistory": {
+      "language_in_catalog": "R",
+      "reason": "Сохранённая история команд R."
+    },
+    "sh-session": {
+      "language_in_catalog": "ShellSession",
+      "reason": "Запись терминального сеанса с командами и выводом."
+    },
+    "sthlp": {
+      "language_in_catalog": "Stata",
+      "reason": "Файлы справки Stata."
+    }
+  },
+  "resources_and_packaged_programs": {
+    "8xp": {
+      "language_in_catalog": "TI Program",
+      "reason": "Файл передачи программы TI, обычно с токенизированным кодом."
+    },
+    "dfm": {
+      "language_in_catalog": "Pascal",
+      "reason": "Ресурс формы Delphi. Хранит свойства компонентов и ссылки на обработчики."
+    },
+    "rbres": {
+      "language_in_catalog": "REALbasic",
+      "reason": "Ресурсы проекта REALbasic."
+    },
+    "scpt": {
+      "language_in_catalog": "AppleScript",
+      "reason": "Скомпилированный сценарий AppleScript."
+    },
+    "vmb": {
+      "language_in_catalog": "Vim script",
+      "reason": "Архив Vimball с файлами расширения Vim."
+    },
+    "xojo_toolbar": {
+      "language_in_catalog": "Xojo",
+      "reason": "Ресурс панели инструментов проекта Xojo."
+    }
+  },
+  "tool_inputs_with_code_or_dsl": {
+    "asd": {
+      "language_in_catalog": "Common Lisp",
+      "reason": "Описание системы ASDF в Common Lisp."
+    },
+    "bb": {
+      "language_in_catalog": "BitBake",
+      "reason": "Рецепты и классы сборки BitBake. Могут содержать Python и Shell."
+    },
+    "bbappend": {
+      "language_in_catalog": "BitBake",
+      "reason": "Рецепты и классы сборки BitBake. Могут содержать Python и Shell."
+    },
+    "bbclass": {
+      "language_in_catalog": "BitBake",
+      "reason": "Рецепты и классы сборки BitBake. Могут содержать Python и Shell."
+    },
+    "cmake": {
+      "language_in_catalog": "CMake",
+      "reason": "Сценарии CMake и их шаблоны."
+    },
+    "cmake.in": {
+      "language_in_catalog": "CMake",
+      "reason": "Сценарии CMake и их шаблоны."
+    },
+    "containerfile": {
+      "language_in_catalog": "Dockerfile",
+      "reason": "Инструкции сборки контейнера. Могут запускать команды Shell."
+    },
+    "cwl": {
+      "language_in_catalog": "Common Workflow Language",
+      "reason": "Описание рабочих процессов CWL. Может содержать выражения JavaScript."
+    },
+    "dockerfile": {
+      "language_in_catalog": "Dockerfile",
+      "reason": "Инструкции сборки контейнера. Могут запускать команды Shell."
+    },
+    "ebuild": {
+      "language_in_catalog": "Gentoo Ebuild",
+      "reason": "Сценарии сборки Gentoo в Bash."
+    },
+    "eclass": {
+      "language_in_catalog": "Gentoo Eclass",
+      "reason": "Сценарии сборки Gentoo в Bash."
+    },
+    "fancypack": {
+      "language_in_catalog": "Fancy",
+      "reason": "Пакетное описание в Fancy."
+    },
+    "gdb": {
+      "language_in_catalog": "GDB",
+      "reason": "Сценарии и настройки отладчика GDB."
+    },
+    "gdbinit": {
+      "language_in_catalog": "GDB",
+      "reason": "Сценарии и настройки отладчика GDB."
+    },
+    "gemspec": {
+      "language_in_catalog": "Ruby",
+      "reason": "Спецификации пакетов и расширений на Ruby."
+    },
+    "jcl": {
+      "language_in_catalog": "JCL",
+      "reason": "Язык управления заданиями."
+    },
+    "ld": {
+      "language_in_catalog": "Linker Script",
+      "reason": "Сценарии компоновщика."
+    },
+    "lds": {
+      "language_in_catalog": "Linker Script",
+      "reason": "Сценарии компоновщика."
+    },
+    "mak": {
+      "language_in_catalog": "Makefile",
+      "reason": "Правила Make, часто с командами Shell."
+    },
+    "make": {
+      "language_in_catalog": "Makefile",
+      "reason": "Правила Make, часто с командами Shell."
+    },
+    "makefile": {
+      "language_in_catalog": "Makefile",
+      "reason": "Правила Make, часто с командами Shell."
+    },
+    "mk": {
+      "language_in_catalog": "Makefile",
+      "reason": "Правила Make, часто с командами Shell."
+    },
+    "mkfile": {
+      "language_in_catalog": "Makefile",
+      "reason": "Правила Make, часто с командами Shell."
+    },
+    "mmk": {
+      "language_in_catalog": "Module Management System",
+      "reason": "Правила сборки Module Management System."
+    },
+    "mms": {
+      "language_in_catalog": "Module Management System",
+      "reason": "Правила сборки Module Management System."
+    },
+    "nimble": {
+      "language_in_catalog": "Nim",
+      "reason": "Описание пакета Nimble. Может содержать код NimScript."
+    },
+    "pac": {
+      "language_in_catalog": "JavaScript",
+      "reason": "Настройка прокси с функцией JavaScript."
+    },
+    "pluginspec": {
+      "language_in_catalog": "Ruby",
+      "reason": "Спецификации пакетов и расширений на Ruby."
+    },
+    "podspec": {
+      "language_in_catalog": "Ruby",
+      "reason": "Спецификации пакетов и расширений на Ruby."
+    },
+    "pri": {
+      "language_in_catalog": "QMake",
+      "reason": "Включаемые файлы проекта qmake."
+    },
+    "rake": {
+      "language_in_catalog": "Ruby",
+      "reason": "Задачи сборки в Ruby."
+    },
+    "rockspec": {
+      "language_in_catalog": "Lua",
+      "reason": "Описание пакета LuaRocks на Lua."
+    },
+    "sbt": {
+      "language_in_catalog": "Scala",
+      "reason": "Сценарии сборки sbt на Scala."
+    },
+    "sdc": {
+      "language_in_catalog": "Tcl",
+      "reason": "Ограничения для средств проектирования аппаратуры в синтаксисе Tcl."
+    },
+    "sls": {
+      "language_in_catalog": "Salt",
+      "reason": "Описания состояний Salt. Возможны разные форматы и шаблоны."
+    },
+    "smk": {
+      "language_in_catalog": "Snakemake",
+      "reason": "Правила рабочих процессов Snakemake с Python."
+    },
+    "snakefile": {
+      "language_in_catalog": "Snakemake",
+      "reason": "Правила рабочих процессов Snakemake с Python."
+    },
+    "workflow": {
+      "language_in_catalog": "HCL",
+      "reason": "Исторический формат описания GitHub Actions в HCL."
+    },
+    "xdc": {
+      "language_in_catalog": "Tcl",
+      "reason": "Ограничения для средств проектирования аппаратуры в синтаксисе Tcl."
+    }
+  },
+  "mixed_formats": {
+    "Dsr": {
+      "language_in_catalog": "Visual Basic 6.0",
+      "reason": "Описание формы или другого объекта интерфейса. Может включать исходный код объекта."
+    },
+    "cdf": {
+      "language_in_catalog": "Wolfram Language",
+      "reason": "Документы или блокноты Wolfram. Могут содержать вычисляемый код."
+    },
+    "csd": {
+      "language_in_catalog": "Csound Document",
+      "reason": "Документ Csound. Может объединять исходник оркестра, партитуру и параметры."
+    },
+    "ctl": {
+      "language_in_catalog": "Visual Basic 6.0",
+      "reason": "Описание формы или другого объекта интерфейса. Может включать исходный код объекта."
+    },
+    "frm": {
+      "language_in_catalog": "VBA",
+      "reason": "Описание формы или другого объекта интерфейса. Может включать исходный код объекта."
+    },
+    "ftl": {
+      "language_in_catalog": "Fluent",
+      "reason": "Ресурс локализации Fluent или шаблон FreeMarker. Для классификации нужно содержимое."
+    },
+    "maxhelp": {
+      "language_in_catalog": "Max",
+      "reason": "Интерактивная справка в виде рабочего патча Max."
+    },
+    "maxpat": {
+      "language_in_catalog": "Max",
+      "reason": "Форматы патчей Max. Представляют программы визуального языка."
+    },
+    "mps": {
+      "language_in_catalog": "JetBrains MPS",
+      "reason": "Сериализованная модель MPS. Может представлять исходный код языка MPS."
+    },
+    "mxt": {
+      "language_in_catalog": "Max",
+      "reason": "Форматы патчей Max. Представляют программы визуального языка."
+    },
+    "nb": {
+      "language_in_catalog": "Wolfram Language",
+      "reason": "Документы или блокноты Wolfram. Могут содержать вычисляемый код."
+    },
+    "nbp": {
+      "language_in_catalog": "Wolfram Language",
+      "reason": "Документы или блокноты Wolfram. Могут содержать вычисляемый код."
+    },
+    "p8": {
+      "language_in_catalog": "Lua",
+      "reason": "Картридж PICO-8. Может содержать Lua, графику и звук."
+    },
+    "pat": {
+      "language_in_catalog": "Max",
+      "reason": "Форматы патчей Max. Представляют программы визуального языка."
+    },
+    "phpt": {
+      "language_in_catalog": "PHP",
+      "reason": "Сценарий теста PHP с отдельными секциями кода и ожидаемого результата."
+    },
+    "rbfrm": {
+      "language_in_catalog": "REALbasic",
+      "reason": "Описание формы или другого объекта интерфейса. Может включать исходный код объекта."
+    },
+    "rbmnu": {
+      "language_in_catalog": "REALbasic",
+      "reason": "Описание формы или другого объекта интерфейса. Может включать исходный код объекта."
+    },
+    "rbtbar": {
+      "language_in_catalog": "REALbasic",
+      "reason": "Описание формы или другого объекта интерфейса. Может включать исходный код объекта."
+    },
+    "xojo_menu": {
+      "language_in_catalog": "Xojo",
+      "reason": "Описание формы или другого объекта интерфейса. Может включать исходный код объекта."
+    },
+    "xojo_report": {
+      "language_in_catalog": "Xojo",
+      "reason": "Описание формы или другого объекта интерфейса. Может включать исходный код объекта."
+    },
+    "xojo_window": {
+      "language_in_catalog": "Xojo",
+      "reason": "Описание формы или другого объекта интерфейса. Может включать исходный код объекта."
+    }
+  },
+  "extension_collisions": {
+    "asc": [
+      "AsciiDoc",
+      "Public Key"
+    ],
+    "asy": [
+      "LTspice Symbol"
+    ],
+    "baml": [
+      "WPF Binary Application Markup Language"
+    ],
+    "bs": [
+      "Bikeshed"
+    ],
+    "bst": [
+      "BuildStream"
+    ],
+    "cls": [
+      "TeX"
+    ],
+    "com": [
+      "DOS COM executable"
+    ],
+    "cue": [
+      "Cue Sheet"
+    ],
+    "dsc": [
+      "Debian Package Control File"
+    ],
+    "dsp": [
+      "Microsoft Developer Studio Project"
+    ],
+    "for": [
+      "Formatted"
+    ],
+    "fr": [
+      "Text"
+    ],
+    "frm": [
+      "INI"
+    ],
+    "gml": [
+      "Gerber Image",
+      "Graph Modeling Language",
+      "XML"
+    ],
+    "gst": [
+      "XML"
+    ],
+    "gts": [
+      "Gerber Image"
+    ],
+    "ice": [
+      "JSON"
+    ],
+    "inc": [
+      "HTML"
+    ],
+    "ks": [
+      "Kickstart"
+    ],
+    "l": [
+      "Roff"
+    ],
+    "mc": [
+      "Win32 Message File"
+    ],
+    "md": [
+      "Markdown"
+    ],
+    "mm": [
+      "XML"
+    ],
+    "mod": [
+      "Linux Kernel Module",
+      "XML"
+    ],
+    "mojo": [
+      "XML"
+    ],
+    "ms": [
+      "Roff"
+    ],
+    "msg": [
+      "ROS Interface"
+    ],
+    "n": [
+      "Roff"
+    ],
+    "nb": [
+      "Text"
+    ],
+    "ncl": [
+      "Gerber Image",
+      "Text",
+      "XML"
+    ],
+    "nl": [
+      "NL"
+    ],
+    "nr": [
+      "Roff"
+    ],
+    "odin": [
+      "Object Data Instance Notation"
+    ],
+    "p8": [
+      "PKCS #8 private key"
+    ],
+    "pbt": [
+      "Protocol Buffer Text Format"
+    ],
+    "pc": [
+      "pkg-config"
+    ],
+    "pkl": [
+      "Pickle"
+    ],
+    "pluginspec": [
+      "XML"
+    ],
+    "pm": [
+      "X PixMap"
+    ],
+    "pro": [
+      "INI",
+      "Proguard"
+    ],
+    "res": [
+      "XML"
+    ],
+    "rs": [
+      "XML"
+    ],
+    "scd": [
+      "Markdown"
+    ],
+    "sch": [
+      "Eagle",
+      "KiCad Schematic",
+      "XML"
+    ],
+    "sip": [
+      "Quartus Simulation IP"
+    ],
+    "sol": [
+      "Gerber Image"
+    ],
+    "spec": [
+      "RPM Spec"
+    ],
+    "st": [
+      "StringTemplate"
+    ],
+    "star": [
+      "STAR"
+    ],
+    "sw": [
+      "XML"
+    ],
+    "tact": [
+      "JSON"
+    ],
+    "tl": [
+      "Type Language"
+    ],
+    "tpl": [
+      "Go Template"
+    ],
+    "ts": [
+      "XML",
+      "Qt Linguist TS"
+    ],
+    "tsp": [
+      "TSPLIB data"
+    ],
+    "tsx": [
+      "XML"
+    ],
+    "typ": [
+      "XML"
+    ],
+    "workflow": [
+      "XML"
+    ],
+    "x": [
+      "DirectX 3D File"
+    ],
+    "yy": [
+      "JSON"
+    ]
+  }
+}

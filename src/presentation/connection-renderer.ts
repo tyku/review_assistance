@@ -215,7 +215,6 @@ interface Window {
         showReview(result.review, result.progress, {
           source: service.name,
           incomplete: result.incomplete,
-          languageSorting: result.languageSorting,
         });
       } else {
         reviewError.textContent = reviewMessage(view, result.error);

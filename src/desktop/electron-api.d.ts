@@ -56,6 +56,11 @@ declare module 'electron' {
     isDestroyed(): boolean;
   }
 
+  export const dialog: {
+    showOpenDialog(window: BrowserWindow, options: { title: string; properties: ['openDirectory'] }):
+      Promise<{ canceled: boolean; filePaths: string[] }>;
+  };
+
   export const ipcMain: {
     handle(channel: string, listener: (event: IpcMainInvokeEvent, ...args: unknown[]) => Promise<unknown>): void;
     removeHandler(channel: string): void;

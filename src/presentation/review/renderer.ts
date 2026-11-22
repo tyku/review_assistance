@@ -1,7 +1,6 @@
 type ScreenReview = import('../../review/domain/review').Review;
 type ScreenFile = import('../../review/domain/review').ChangedFile;
 type FilterIds = typeof import('../../review/domain/file-filter');
-type LanguageSortingStatus = import('../../review/application/linked-review').LanguageSortingStatus;
 type FileProgress = import('../../review/application/review-progress').FileProgress;
 type ReviewProgressSnapshot = import('../../review/application/review-progress').ReviewProgressSnapshot;
 
@@ -27,6 +26,7 @@ function byId(id: string): HTMLElement {
 const welcome = byId('welcome');
 const reviewScreen = byId('review');
 const openButton = byId('open') as HTMLButtonElement;
+const openLocalButton = byId('open-local') as HTMLButtonElement;
 const backButton = byId('back');
 const errorMessage = byId('error');
 const fileList = byId('files');
@@ -77,7 +77,13 @@ function showDiff(file: ScreenFile, button: HTMLButtonElement, source: string) {
   diffScroll.hidden = false;
   byId('diff-stats').replaceChildren(...stats(file));
   if (file.unavailable) {
-    diffScroll.replaceChildren(element('p', 'diff-unavailable', `${source} не вернул полный diff этого файла.`));
+    const message = file.unavailable.reason === 'binary' ? 'Бинарный файл. Текстовый diff недоступен.'
+      : `${source} не вернул полный diff этого файла.`;
+    diffScroll.replaceChildren(element('p', 'diff-unavailable', message));
+    return;
+  }
+  if (file.hunks.length === 0) {
+    diffScroll.replaceChildren(element('p', 'diff-unavailable', 'В этом изменении нет строк для показа.'));
     return;
   }
 
@@ -133,18 +139,11 @@ function fileGroup(label: string, entries: HTMLLIElement[], expanded: boolean): 
 function showReview(example: ScreenReview, progress?: ReviewProgressSnapshot, linkedReview?: {
   source: string;
   incomplete: boolean;
-  languageSorting?: LanguageSortingStatus;
 }) {
-  const { source = 'Сервис', incomplete, languageSorting } = linkedReview ?? {};
-  const languageMode = languageSorting === 'available';
-  const messages: string[] = [];
-  if (incomplete) messages.push(`${source} вернул неполные изменения. Некоторые файлы или строки могут отсутствовать.`);
-  if (languageSorting === 'empty') messages.push('У репозитория пока нет статистики языков. Используется обычная сортировка.');
-  if (languageSorting === 'forbidden') messages.push('GitLab не дал доступ к списку языков. Используется обычная сортировка.');
-  if (languageSorting === 'unavailable') messages.push('Не удалось загрузить языки репозитория. Используется обычная сортировка.');
+  const { source = 'Сервис', incomplete } = linkedReview ?? {};
   const notice = byId('diff-notice');
-  notice.textContent = messages.join(' ');
-  notice.hidden = messages.length === 0;
+  notice.textContent = incomplete ? `${source} вернул неполные изменения. Некоторые файлы или строки могут отсутствовать.` : '';
+  notice.hidden = !incomplete;
   byId('project').textContent = example.project;
   byId('reference').textContent = example.reference;
   byId('review-title').textContent = example.title;
@@ -165,10 +164,8 @@ function showReview(example: ScreenReview, progress?: ReviewProgressSnapshot, li
   const extensionRule = { id: 'other-extension' satisfies FilterIds['OTHER_EXTENSION_FILTER'], entries: other };
   const testRule = { id: 'test-path' satisfies FilterIds['TEST_PATH_FILTER'], entries: tests };
   const formattingRule = { id: 'formatting-and-comments' satisfies FilterIds['FORMATTING_AND_COMMENTS_FILTER'], entries: formatting };
-  const groupingRules = languageMode
-    ? [extensionRule, formattingRule, testRule]
-    : [extensionRule, testRule, formattingRule];
-  const languageFilterId: FilterIds['REPOSITORY_LANGUAGE_FILTER'] = 'repository-language';
+  const linguistRule = { id: 'linguist-file' satisfies FilterIds['LINGUIST_FILE_FILTER'], entries: other };
+  const groupingRules = [extensionRule, testRule, formattingRule, linguistRule];
 
   for (const file of example.files) {
     const entry = element('li');
@@ -192,25 +189,22 @@ function showReview(example: ScreenReview, progress?: ReviewProgressSnapshot, li
     const target = groupingRules.find(({ id }) =>
       file.filterResults?.some((result) => result.filterId === id && result.outcome === 'match'),
     );
-    const language = file.filterResults?.find((result) => result.filterId === languageFilterId);
-    const fallback = languageMode && language?.outcome !== 'match' ? other : primary;
-    let reason = file.filterResults?.find((result) => result.filterId === target?.id)?.reason;
-    if (languageMode && target === testRule) reason = 'Тест';
-    if (!target && fallback === other) reason = language?.reason ?? 'Язык файла не распознан';
+    const reason = target === testRule ? 'Тест' :
+      file.filterResults?.find((result) => result.filterId === target?.id)?.reason;
     if (reason) button.append(element('span', 'file-reason', reason));
     entry.append(button);
     const fileEntry = { file, entry, button, visitCount, viewedMark, progress: progressByPath.get(file.path) };
     updateFileProgress(fileEntry);
     entriesByPath.set(file.path, fileEntry);
-    (target?.entries ?? fallback).push(fileEntry);
+    (target?.entries ?? primary).push(fileEntry);
   }
 
   fileList.replaceChildren();
   const groups = [
-    { label: languageMode ? 'Основное' : 'К просмотру', entries: primary, expanded: true },
+    { label: 'Основное', entries: primary, expanded: true },
     { label: 'Тесты', entries: tests, expanded: true },
     { label: 'Только оформление и комментарии', entries: formatting, expanded: false },
-    { label: languageMode ? 'Остальное' : 'Прочее', entries: other, expanded: false },
+    { label: 'Остальное', entries: other, expanded: false },
   ];
   if (linkedReview) {
     const rank = new Map(example.readingOrder.map((path, index) => [path, index]));
@@ -293,8 +287,13 @@ function showReview(example: ScreenReview, progress?: ReviewProgressSnapshot, li
   byId('review-title').focus();
 }
 
+function setOpeningReview(busy: boolean) {
+  openButton.disabled = busy;
+  openLocalButton.disabled = busy;
+}
+
 openButton.addEventListener('click', async () => {
-  openButton.disabled = true;
+  setOpeningReview(true);
   errorMessage.hidden = true;
 
   try {
@@ -305,8 +304,35 @@ openButton.addEventListener('click', async () => {
     errorMessage.textContent = 'Не удалось открыть учебный MR. Проверьте, что файл fixtures/example.json на месте и не повреждён, затем попробуйте снова.';
     errorMessage.hidden = false;
   } finally {
-    openButton.disabled = false;
+    setOpeningReview(false);
     if (!welcome.hidden) openButton.focus();
+  }
+});
+
+openLocalButton.addEventListener('click', async () => {
+  setOpeningReview(true);
+  errorMessage.hidden = true;
+  const messages = {
+    'git-missing': 'Git недоступен. Установите Git и откройте папку снова.',
+    'not-repository': 'Выберите папку внутри рабочего дерева Git-репозитория.',
+    empty: 'В рабочем дереве нет незакоммиченных изменений.',
+    'too-large': 'Изменений слишком много для одного ревью.',
+    'read-failed': 'Не удалось прочитать изменения Git. Проверьте доступ к папке и попробуйте снова.',
+  };
+  try {
+    const result = await window.review.openLocal();
+    if (welcome.hidden) return;
+    if (result.ok) showReview(result.review, result.progress, { source: 'Git', incomplete: false });
+    else if (result.error !== 'cancelled') {
+      errorMessage.textContent = messages[result.error] ?? messages['read-failed'];
+      errorMessage.hidden = false;
+    }
+  } catch {
+    errorMessage.textContent = messages['read-failed'];
+    errorMessage.hidden = false;
+  } finally {
+    setOpeningReview(false);
+    if (!welcome.hidden) openLocalButton.focus();
   }
 });
 
@@ -314,5 +340,5 @@ backButton.addEventListener('click', () => {
   reviewScreen.hidden = true;
   backButton.hidden = true;
   welcome.hidden = false;
-  openButton.focus();
+  openLocalButton.focus();
 });

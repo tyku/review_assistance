@@ -19,7 +19,7 @@ export interface FileDiff {
   readonly path: string;
   readonly hunks: readonly DiffHunk[];
   readonly structuralChange?: boolean;
-  readonly unavailable?: { added?: number; removed?: number };
+  readonly unavailable?: { added?: number; removed?: number; reason?: 'binary' };
 }
 
 export interface ChangedFile extends FileDiff {
@@ -60,7 +60,7 @@ export function createReview(details: ReviewDetails, diffs: readonly FileDiff[])
     const lines = hunks.flatMap((hunk) => hunk.lines);
     const added = lines.filter((line) => line.marker === '+').length;
     const removed = lines.filter((line) => line.marker === '-').length;
-    if (added + removed === 0) throw new Error('File has no changes');
+    if (!structuralChange && added + removed === 0) throw new Error('File has no changes');
     return { ...diff, added, removed };
   });
 

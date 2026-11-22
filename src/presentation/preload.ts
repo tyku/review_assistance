@@ -3,12 +3,14 @@ import type { GITHUB_CHANNELS, GitHubBridge } from './github/github-ipc';
 import type { ProgressResult } from '../review/application/review-progress';
 import type { GITLAB_CHANNELS, GitLabBridge } from './gitlab/gitlab-ipc';
 import type { ConnectionResult } from '../connections/application/account-connection';
-import type { LinkedReviewScreenResult, OPEN_EXAMPLE_CHANNEL, UPDATE_PROGRESS_CHANNEL, OpenExampleResult, ReviewBridge } from './review/review-ipc';
+import type { LinkedReviewScreenResult, LocalReviewScreenResult, OPEN_EXAMPLE_CHANNEL, OPEN_LOCAL_CHANNEL, UPDATE_PROGRESS_CHANNEL, OpenExampleResult, ReviewBridge } from './review/review-ipc';
 
 const exampleChannel: typeof OPEN_EXAMPLE_CHANNEL = 'review:open-example';
+const localChannel: typeof OPEN_LOCAL_CHANNEL = 'review:open-local';
 const progressChannel: typeof UPDATE_PROGRESS_CHANNEL = 'review:update-progress';
 const review: ReviewBridge = {
   openExample: () => ipcRenderer.invoke(exampleChannel) as Promise<OpenExampleResult>,
+  openLocal: () => ipcRenderer.invoke(localChannel) as Promise<LocalReviewScreenResult>,
   updateProgress: (key, path, fingerprint, viewed) =>
     ipcRenderer.invoke(progressChannel, key, path, fingerprint, viewed) as Promise<ProgressResult>,
 };

@@ -72,6 +72,7 @@ button:disabled { cursor: wait; opacity: .7; }
 }
 h1 { margin: 0; letter-spacing: -.028em; font-size: clamp(24px, 3vw, 34px); line-height: 1.15; }
 .welcome p { margin: 14px auto 22px; color: var(--muted); line-height: 1.5; }
+.welcome-actions { display: flex; flex-wrap: wrap; justify-content: center; gap: 8px; }
 .welcome .error { margin: 18px auto 0; color: #952631; font-size: 13px; }
 
 .shell:has(.review:not([hidden])) {

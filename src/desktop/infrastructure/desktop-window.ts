@@ -1,5 +1,5 @@
 import { Inject, Injectable, Logger, type OnApplicationBootstrap, type OnModuleDestroy } from '@nestjs/common';
-import { app, BrowserWindow, type WebContents } from 'electron';
+import { app, BrowserWindow, dialog, type WebContents } from 'electron';
 
 export const WINDOW_OPTIONS = Symbol('WINDOW_OPTIONS');
 
@@ -28,6 +28,15 @@ export class DesktopWindow implements OnApplicationBootstrap, OnModuleDestroy {
 
   owns(sender: WebContents): boolean {
     return this.window?.webContents === sender;
+  }
+
+  async chooseDirectory(): Promise<string | undefined> {
+    if (!this.window) return;
+    const result = await dialog.showOpenDialog(this.window, {
+      title: 'Папка локального Git-репозитория',
+      properties: ['openDirectory'],
+    });
+    return result.canceled ? undefined : result.filePaths[0];
   }
 
   private readonly onActivate = (): void => {

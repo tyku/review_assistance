@@ -4,11 +4,24 @@ import type { ConnectionResult } from '../connections/application/account-connec
 import type { DesktopWindow } from '../desktop/infrastructure/desktop-window';
 import type { LinkedReviewResult } from '../review/application/linked-review';
 import type { ProgressResult } from '../review/application/review-progress';
-import { UPDATE_PROGRESS_CHANNEL, type OpenExampleResult } from './review/review-ipc';
+import { LINGUIST_FILE_FILTER } from '../review/domain/file-filter';
+import type { Review } from '../review/domain/review';
+import { UPDATE_PROGRESS_CHANNEL, type OpenExampleResult, type LocalReviewScreenResult } from './review/review-ipc';
 
-type ActionResult = ConnectionResult | LinkedReviewResult | OpenExampleResult | ProgressResult;
+type ActionResult = ConnectionResult | LinkedReviewResult | OpenExampleResult | LocalReviewScreenResult | ProgressResult;
 
 const logger = new Logger('DesktopActions');
+const languageLogger = new Logger('Linguist');
+
+function logDetectedLanguages(review: Review): void {
+  if (!Logger.isLevelEnabled('debug')) return;
+  const languages = new Set<string>();
+  for (const file of review.files) {
+    const language = file.filterResults?.find(({ filterId }) => filterId === LINGUIST_FILE_FILTER)?.detectedLanguage;
+    if (language) languages.add(language);
+  }
+  languageLogger.debug(`detectedLanguages=${JSON.stringify([...languages].sort())}`);
+}
 
 export function registerLoggedIpc(
   window: DesktopWindow,
@@ -29,14 +42,17 @@ export function registerLoggedIpc(
       if (!result.ok) {
         const reason = 'error' in result ? result.error : 'example-unavailable';
         const fallback = 'canUseSession' in result && result.canUseSession ? ' fallback=session' : '';
-        logger.warn(`${channel} failed reason=${reason}${fallback} ${duration}`);
+        if (reason === 'cancelled') logger.log(`${channel} cancelled ${duration}`);
+        else logger.warn(`${channel} failed reason=${reason}${fallback} ${duration}`);
       } else if ('review' in result) {
-        const sorting = result.languageSorting ? ` languageSorting=${result.languageSorting}` : '';
-        const summary = `${channel} completed files=${result.review.files.length} incomplete=${result.incomplete}${sorting} ${duration}`;
-        if (result.incomplete) logger.warn(summary);
+        const incomplete = 'incomplete' in result ? ` incomplete=${result.incomplete}` : '';
+        const summary = `${channel} completed files=${result.review.files.length}${incomplete} ${duration}`;
+        if ('incomplete' in result && result.incomplete) logger.warn(summary);
         else logger.log(summary);
+        logDetectedLanguages(result.review);
       } else if ('example' in result) {
         logger.log(`${channel} completed files=${result.example.files.length} ${duration}`);
+        logDetectedLanguages(result.example);
       } else if ('status' in result) {
         const { status } = result;
         const storage = status.connected ? ` storage=${status.storage}` : '';

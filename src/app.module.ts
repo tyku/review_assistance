@@ -7,6 +7,7 @@ import { GitLabModule } from './gitlab/gitlab.module';
 import { GitLabIpcHandler } from './presentation/gitlab/gitlab-ipc.handler';
 import { ReviewIpcHandler } from './presentation/review/review-ipc.handler';
 import { ReviewModule } from './review/review.module';
+import { LocalGitModule } from './local-git/local-git.module';
 
 @Module({
   providers: [ReviewIpcHandler, GitLabIpcHandler, GitHubIpcHandler],
@@ -21,8 +22,9 @@ export class AppModule {
           page: join(root, 'ui', 'index.html'),
           preload: join(__dirname, 'presentation', 'preload.js'),
         }),
-        GitLabModule.forKeychain(keychain, join(userData, 'repository-languages')),
+        GitLabModule.forKeychain(keychain),
         GitHubModule.forKeychain(keychain),
+        LocalGitModule,
         ReviewModule.forFixture(join(root, 'fixtures', 'example.json'), join(userData, 'review-progress')),
       ],
     };
